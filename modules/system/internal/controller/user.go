@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 
+	"github.com/roamdream/roamadmin/kernel/utils"
 	"github.com/roamdream/roamadmin/modules/system/api"
 	"github.com/roamdream/roamadmin/modules/system/internal/model"
 	"github.com/roamdream/roamadmin/modules/system/internal/service"
@@ -26,7 +27,7 @@ func (c *User) Create(ctx context.Context, req *api.UserCreateReq) (*api.UserCre
 		Status:   req.Status,
 		Remark:   req.Remark,
 	}, req.RoleIds)
-	writeOper(ctx, "用户", "创建", err)
+	writeOper(ctx, "user", "create", err)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +52,7 @@ func (c *User) List(ctx context.Context, req *api.UserListReq) (*api.UserListRes
 			Avatar:    it.Avatar,
 			Status:    it.Status,
 			Remark:    it.Remark,
-			CreatedAt: it.CreatedAt.String(),
+			CreatedAt: utils.TimeRFC3339(it.CreatedAt),
 		})
 	}
 	return &api.UserListRes{List: out, Total: total, Page: req.Page, Size: req.Size}, nil
@@ -74,7 +75,7 @@ func (c *User) Get(ctx context.Context, req *api.UserGetReq) (*api.UserGetRes, e
 			Avatar:    user.Avatar,
 			Status:    user.Status,
 			Remark:    user.Remark,
-			CreatedAt: user.CreatedAt.String(),
+			CreatedAt: utils.TimeRFC3339(user.CreatedAt),
 		},
 		RoleIds: roleIds,
 	}, nil
@@ -92,7 +93,7 @@ func (c *User) Update(ctx context.Context, req *api.UserUpdateReq) (*api.UserUpd
 		Status:   req.Status,
 		Remark:   req.Remark,
 	}, req.RoleIds)
-	writeOper(ctx, "用户", "更新", err)
+	writeOper(ctx, "user", "update", err)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +103,7 @@ func (c *User) Update(ctx context.Context, req *api.UserUpdateReq) (*api.UserUpd
 // Delete 删除用户。
 func (c *User) Delete(ctx context.Context, req *api.UserDeleteReq) (*api.UserDeleteRes, error) {
 	err := service.DeleteUser(ctx, req.Id)
-	writeOper(ctx, "用户", "删除", err)
+	writeOper(ctx, "user", "delete", err)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +113,7 @@ func (c *User) Delete(ctx context.Context, req *api.UserDeleteReq) (*api.UserDel
 // ResetPassword 重置用户密码。
 func (c *User) ResetPassword(ctx context.Context, req *api.UserResetPasswordReq) (*api.UserResetPasswordRes, error) {
 	err := service.ResetUserPassword(ctx, req.Id, req.Password)
-	writeOper(ctx, "用户", "重置密码", err)
+	writeOper(ctx, "user", "reset password", err)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +123,7 @@ func (c *User) ResetPassword(ctx context.Context, req *api.UserResetPasswordReq)
 // SetStatus 启用/禁用用户。
 func (c *User) SetStatus(ctx context.Context, req *api.UserSetStatusReq) (*api.UserSetStatusRes, error) {
 	err := service.SetUserStatus(ctx, req.Id, req.Status)
-	writeOper(ctx, "用户", "启用/禁用", err)
+	writeOper(ctx, "user", "enable or disable", err)
 	if err != nil {
 		return nil, err
 	}

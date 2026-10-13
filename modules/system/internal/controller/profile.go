@@ -36,6 +36,6 @@ func (c *Profile) Logout(ctx context.Context, req *api.LogoutReq) (*api.LogoutRe
 	if err := service.Logout(ctx); err != nil {
 		return nil, err
 	}
-	recordOper(ctx, "认证", "登出", 0, "")
+	recordOper(ctx, "auth", "logout", 0, "")
 	return &api.LogoutRes{Logout: true}, nil
 }

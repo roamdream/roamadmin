@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 
+	"github.com/roamdream/roamadmin/kernel/utils"
 	"github.com/roamdream/roamadmin/modules/system/api"
 	"github.com/roamdream/roamadmin/modules/system/internal/model"
 	"github.com/roamdream/roamadmin/modules/system/internal/service"
@@ -27,7 +28,7 @@ func (c *Menu) Create(ctx context.Context, req *api.MenuCreateReq) (*api.MenuCre
 		Sort:      req.Sort,
 		Status:    req.Status,
 	})
-	writeOper(ctx, "菜单", "创建", err)
+	writeOper(ctx, "menu", "create", err)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +67,7 @@ func (c *Menu) Update(ctx context.Context, req *api.MenuUpdateReq) (*api.MenuUpd
 		Sort:      req.Sort,
 		Status:    req.Status,
 	})
-	writeOper(ctx, "菜单", "更新", err)
+	writeOper(ctx, "menu", "update", err)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +77,7 @@ func (c *Menu) Update(ctx context.Context, req *api.MenuUpdateReq) (*api.MenuUpd
 // Delete 删除菜单。
 func (c *Menu) Delete(ctx context.Context, req *api.MenuDeleteReq) (*api.MenuDeleteRes, error) {
 	err := service.DeleteMenu(ctx, req.Id)
-	writeOper(ctx, "菜单", "删除", err)
+	writeOper(ctx, "menu", "delete", err)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +98,7 @@ func toMenuItem(m *model.Menu) *api.MenuItem {
 		Icon:      m.Icon,
 		Sort:      m.Sort,
 		Status:    m.Status,
-		CreatedAt: m.CreatedAt.String(),
+		CreatedAt: utils.TimeRFC3339(m.CreatedAt),
 	}
 }
 

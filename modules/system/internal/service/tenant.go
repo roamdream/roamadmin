@@ -26,7 +26,7 @@ func CreateTenant(ctx context.Context, in *model.Tenant) (int64, error) {
 	if exists, err := tenantCodeExists(ctx, in.Code, 0); err != nil {
 		return 0, err
 	} else if exists {
-		return 0, errcode.New(errcode.CodeDuplicate, "租户编码已存在")
+		return 0, errcode.New(errcode.CodeDuplicate, "tenant code already exists")
 	}
 
 	id := ra.DB().NextID()
@@ -75,7 +75,7 @@ func GetTenant(ctx context.Context, id int64) (*model.Tenant, error) {
 		return nil, errcode.Wrap(errcode.CodeDB, err)
 	}
 	if in.Id == 0 {
-		return nil, errcode.New(errcode.CodeNotFound, "租户不存在")
+		return nil, errcode.New(errcode.CodeNotFound, "tenant not found")
 	}
 	return &in, nil
 }

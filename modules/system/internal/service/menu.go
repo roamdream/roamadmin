@@ -18,7 +18,7 @@ import (
 func CreateMenu(ctx context.Context, menu *model.Menu) (int64, error) {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return 0, errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return 0, errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 	id := ra.DB().NextID()
 	if _, err := ra.DB().Model(consts.TableMenu).Data(g.Map{
@@ -44,7 +44,7 @@ func CreateMenu(ctx context.Context, menu *model.Menu) (int64, error) {
 func ListMenu(ctx context.Context, name string) ([]*model.MenuNode, error) {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return nil, errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return nil, errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 	m := ra.DB().Model(consts.TableMenu).Where("tenant_id", tenantID)
 	if name != "" {
@@ -61,14 +61,14 @@ func ListMenu(ctx context.Context, name string) ([]*model.MenuNode, error) {
 func GetMenu(ctx context.Context, id int64) (*model.Menu, error) {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return nil, errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return nil, errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 	var menu model.Menu
 	if err := ra.DB().Model(consts.TableMenu).Where("id", id).Where("tenant_id", tenantID).Scan(&menu); err != nil {
 		return nil, errcode.Wrap(errcode.CodeDB, err)
 	}
 	if menu.Id == 0 {
-		return nil, errcode.New(errcode.CodeNotFound, "菜单不存在")
+		return nil, errcode.New(errcode.CodeNotFound, "menu not found")
 	}
 	return &menu, nil
 }
@@ -77,7 +77,7 @@ func GetMenu(ctx context.Context, id int64) (*model.Menu, error) {
 func UpdateMenu(ctx context.Context, menu *model.Menu) error {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 	if _, err := ra.DB().Model(consts.TableMenu).
 		Where("id", menu.Id).
@@ -102,7 +102,7 @@ func UpdateMenu(ctx context.Context, menu *model.Menu) error {
 func DeleteMenu(ctx context.Context, id int64) error {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 	err := ra.DB().Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		ids, err := collectMenuDescendants(ctx, tx, tenantID, id)

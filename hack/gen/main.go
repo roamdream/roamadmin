@@ -11,15 +11,18 @@
 //
 // 用法：
 //
-//	gen -m <moduleName> -t <TableName> [-title <中文标题>] [-force]
+//	gen -m <moduleName> -t <TableName> [-title <英文标题>] [-force]
 //
 // 示例：
 //
-//	gen -m device -t device_info -title 设备
+//	gen -m device -t device_info -title Device
 //
 // 生成完成后，在 cmd/server/modules.go 里加一行 import 即可注册该模块：
 //
 //	_ "github.com/roamdream/roamadmin/modules/device"
+//
+// 注意：API 文档（g.Meta 的 summary/dc 与 v 校验提示）统一为英文，后端接口面向
+// 国际化输出英文，前端再按需做多语言。
 package main
 
 import (
@@ -45,7 +48,7 @@ var tmplFuncs = template.FuncMap{
 type data struct {
 	Module   string // 模块名（目录/包名），如 device
 	Table    string // 表名，如 device_info
-	Title    string // 中文标题，如 设备
+	Title    string // 英文标题（用于 API 文档 summary/dc），如 Device
 	Entity   string // 实体结构体名，如 DeviceInfo
 	Resource string // 路由资源段（kebab-case），如 device-info
 }
@@ -61,7 +64,7 @@ func main() {
 	)
 	flag.StringVar(&moduleName, "m", "", "模块名（生成目录 modules/<moduleName>，如 device）")
 	flag.StringVar(&tableName, "t", "", "表名（如 device_info）")
-	flag.StringVar(&title, "title", "", "中文标题（用于 API 文档 summary/dc，如 设备；缺省用模块名）")
+	flag.StringVar(&title, "title", "", "英文标题（用于 API 文档 summary/dc，如 Device；缺省用模块名转 Title Case）")
 	flag.BoolVar(&force, "force", false, "目标目录已存在时强制覆盖")
 	flag.Parse()
 
@@ -78,7 +81,7 @@ func main() {
 		os.Exit(2)
 	}
 	if title == "" {
-		title = moduleName
+		title = gstr.CaseCamel(moduleName)
 	}
 
 	targetDir := filepath.Join("modules", moduleName)
@@ -121,8 +124,8 @@ func main() {
 }
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "用法: gen -m <moduleName> -t <TableName> [-title <中文标题>] [-force]")
-	fmt.Fprintln(os.Stderr, "示例: gen -m device -t device_info -title 设备")
+	fmt.Fprintln(os.Stderr, "用法: gen -m <moduleName> -t <TableName> [-title <英文标题>] [-force]")
+	fmt.Fprintln(os.Stderr, "示例: gen -m device -t device_info -title Device")
 }
 
 func validIdent(s string) bool {
@@ -143,7 +146,7 @@ func render(d *data, path, tmplText string) error {
 }
 
 // tmplModule 模块入口：实现 Module 接口，init() 里 Register，Start() 里绑定路由。
-const tmplModule = `// Package {{.Module}} {{.Title}}模块：由 gen 一键生成的 CRUD 业务模块。
+const tmplModule = `// Package {{.Module}} {{.Title}} 模块：由 gen 一键生成的 CRUD 业务模块。
 //
 // 标准动作 = 新建目录 + 实现 Module 接口 + init() 里 Register + 在
 // cmd/server/modules.go 里加一行 import。内核自动接管 Init/Start/Stop。
@@ -196,7 +199,7 @@ func (m *Module) registerRoutes(ctx context.Context) {
 }
 `
 
-// tmplAPI 对外契约：请求/响应 DTO，带 g.Meta 与 v 校验。
+// tmplAPI 对外契约：请求/响应 DTO，带 g.Meta 与 v 校验（接口文档与校验提示统一英文）。
 const tmplAPI = `// Package api {{.Module}} 模块对外契约（请求/响应 DTO）。
 package api
 
@@ -204,71 +207,71 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 )
 
-// {{.Entity}} {{.Title}}数据。
+// {{.Entity}} {{.Title}} 数据。
 type {{.Entity}} struct {
 	Id        int64  {{bt}}json:"id" dc:"ID"{{bt}}
-	Name      string {{bt}}json:"name" dc:"名称"{{bt}}
-	Remark    string {{bt}}json:"remark" dc:"备注"{{bt}}
-	CreatedAt string {{bt}}json:"createdAt" dc:"创建时间"{{bt}}
-	UpdatedAt string {{bt}}json:"updatedAt" dc:"更新时间"{{bt}}
+	Name      string {{bt}}json:"name" dc:"Name"{{bt}}
+	Remark    string {{bt}}json:"remark" dc:"Remark"{{bt}}
+	CreatedAt string {{bt}}json:"createdAt" dc:"Creation time"{{bt}}
+	UpdatedAt string {{bt}}json:"updatedAt" dc:"Update time"{{bt}}
 }
 
 // CreateReq 创建{{.Title}}请求。
 type CreateReq struct {
-	g.Meta {{bt}}path:"/{{.Module}}/{{.Resource}}" method:"post" tags:"{{.Module}}" summary:"创建{{.Title}}"{{bt}}
-	Name   string {{bt}}json:"name" v:"required|length:1,64#名称不能为空|名称长度1-64" dc:"名称"{{bt}}
-	Remark string {{bt}}json:"remark" dc:"备注"{{bt}}
+	g.Meta {{bt}}path:"/{{.Module}}/{{.Resource}}" method:"post" tags:"{{.Module}}" summary:"Create {{.Title}}"{{bt}}
+	Name   string {{bt}}json:"name" v:"required|length:1,64#name is required|name length must be 1-64" dc:"Name"{{bt}}
+	Remark string {{bt}}json:"remark" dc:"Remark"{{bt}}
 }
 
 // CreateRes 创建{{.Title}}响应。
 type CreateRes struct {
-	Id int64 {{bt}}json:"id" dc:"新数据 ID"{{bt}}
+	Id int64 {{bt}}json:"id" dc:"New item ID"{{bt}}
 }
 
 // ListReq 分页查询{{.Title}}请求。
 type ListReq struct {
-	g.Meta {{bt}}path:"/{{.Module}}/{{.Resource}}" method:"get" tags:"{{.Module}}" summary:"分页查询{{.Title}}"{{bt}}
-	Page   int    {{bt}}json:"page" d:"1" v:"min:1#页码最小为1" dc:"页码"{{bt}}
-	Size   int    {{bt}}json:"size" d:"20" v:"min:1|max:200#每页最小为1|每页最大为200" dc:"每页条数"{{bt}}
-	Name   string {{bt}}json:"name" dc:"名称模糊搜索"{{bt}}
+	g.Meta {{bt}}path:"/{{.Module}}/{{.Resource}}" method:"get" tags:"{{.Module}}" summary:"List {{.Title}}s"{{bt}}
+	Page   int    {{bt}}json:"page" d:"1" v:"min:1#page must be at least 1" dc:"Page number"{{bt}}
+	Size   int    {{bt}}json:"size" d:"20" v:"min:1|max:200#page size must be at least 1|page size must be at most 200" dc:"Page size"{{bt}}
+	Name   string {{bt}}json:"name" dc:"Fuzzy search by name"{{bt}}
 }
 
 // ListRes 分页查询{{.Title}}响应。
 type ListRes struct {
-	List  []*{{.Entity}} {{bt}}json:"list" dc:"数据列表"{{bt}}
-	Total int64         {{bt}}json:"total" dc:"总数"{{bt}}
-	Page  int           {{bt}}json:"page" dc:"页码"{{bt}}
-	Size  int           {{bt}}json:"size" dc:"每页条数"{{bt}}
+	List  []*{{.Entity}} {{bt}}json:"list" dc:"Item list"{{bt}}
+	Total int64         {{bt}}json:"total" dc:"Total count"{{bt}}
+	Page  int           {{bt}}json:"page" dc:"Page number"{{bt}}
+	Size  int           {{bt}}json:"size" dc:"Page size"{{bt}}
 }
 
 // GetReq 查询单条{{.Title}}请求。
 type GetReq struct {
-	g.Meta {{bt}}path:"/{{.Module}}/{{.Resource}}/{id}" method:"get" tags:"{{.Module}}" summary:"查询单条{{.Title}}"{{bt}}
-	Id     int64 {{bt}}json:"id" in:"path" v:"required|min:1#ID不能为空|ID不合法" dc:"ID"{{bt}}
+	g.Meta {{bt}}path:"/{{.Module}}/{{.Resource}}/{id}" method:"get" tags:"{{.Module}}" summary:"Get {{.Title}}"{{bt}}
+	Id     int64 {{bt}}json:"id" in:"path" v:"required|min:1#ID is required|ID is invalid" dc:"ID"{{bt}}
 }
 
 // UpdateReq 更新{{.Title}}请求。
 type UpdateReq struct {
-	g.Meta {{bt}}path:"/{{.Module}}/{{.Resource}}/{id}" method:"put" tags:"{{.Module}}" summary:"更新{{.Title}}"{{bt}}
-	Id     int64  {{bt}}json:"id" in:"path" v:"required|min:1#ID不能为空|ID不合法" dc:"ID"{{bt}}
-	Name   string {{bt}}json:"name" v:"required|length:1,64#名称不能为空|名称长度1-64" dc:"名称"{{bt}}
-	Remark string {{bt}}json:"remark" dc:"备注"{{bt}}
+	g.Meta {{bt}}path:"/{{.Module}}/{{.Resource}}/{id}" method:"put" tags:"{{.Module}}" summary:"Update {{.Title}}"{{bt}}
+	Id     int64  {{bt}}json:"id" in:"path" v:"required|min:1#ID is required|ID is invalid" dc:"ID"{{bt}}
+	Name   string {{bt}}json:"name" v:"required|length:1,64#name is required|name length must be 1-64" dc:"Name"{{bt}}
+	Remark string {{bt}}json:"remark" dc:"Remark"{{bt}}
 }
 
 // UpdateRes 更新{{.Title}}响应。
 type UpdateRes struct {
-	Updated bool {{bt}}json:"updated" dc:"是否已更新"{{bt}}
+	Updated bool {{bt}}json:"updated" dc:"Whether updated"{{bt}}
 }
 
 // DeleteReq 删除{{.Title}}请求。
 type DeleteReq struct {
-	g.Meta {{bt}}path:"/{{.Module}}/{{.Resource}}/{id}" method:"delete" tags:"{{.Module}}" summary:"删除{{.Title}}"{{bt}}
-	Id     int64 {{bt}}json:"id" in:"path" v:"required|min:1#ID不能为空|ID不合法" dc:"ID"{{bt}}
+	g.Meta {{bt}}path:"/{{.Module}}/{{.Resource}}/{id}" method:"delete" tags:"{{.Module}}" summary:"Delete {{.Title}}"{{bt}}
+	Id     int64 {{bt}}json:"id" in:"path" v:"required|min:1#ID is required|ID is invalid" dc:"ID"{{bt}}
 }
 
 // DeleteRes 删除{{.Title}}响应。
 type DeleteRes struct {
-	Deleted bool {{bt}}json:"deleted" dc:"是否已删除"{{bt}}
+	Deleted bool {{bt}}json:"deleted" dc:"Whether deleted"{{bt}}
 }
 `
 
@@ -278,7 +281,7 @@ package model
 
 import "github.com/gogf/gf/v2/os/gtime"
 
-// {{.Entity}} {{.Title}}实体（对应表 {{.Table}}）。
+// {{.Entity}} {{.Title}} 实体（对应表 {{.Table}}）。
 type {{.Entity}} struct {
 	Id        int64       {{bt}}json:"id"        orm:"id,primary"{{bt}}
 	Name      string      {{bt}}json:"name"      orm:"name"{{bt}}
@@ -380,6 +383,7 @@ package controller
 import (
 	"context"
 
+	"github.com/roamdream/roamadmin/kernel/utils"
 	"github.com/roamdream/roamadmin/modules/{{.Module}}/api"
 	"github.com/roamdream/roamadmin/modules/{{.Module}}/internal/service"
 )
@@ -411,8 +415,8 @@ func (c *Controller) List(ctx context.Context, req *api.ListReq) (*api.ListRes, 
 			Id:        it.Id,
 			Name:      it.Name,
 			Remark:    it.Remark,
-			CreatedAt: it.CreatedAt.String(),
-			UpdatedAt: it.UpdatedAt.String(),
+			CreatedAt: utils.TimeRFC3339(it.CreatedAt),
+			UpdatedAt: utils.TimeRFC3339(it.UpdatedAt),
 		})
 	}
 	return &api.ListRes{List: out, Total: total, Page: req.Page, Size: req.Size}, nil
@@ -428,8 +432,8 @@ func (c *Controller) Get(ctx context.Context, req *api.GetReq) (*api.{{.Entity}}
 		Id:        it.Id,
 		Name:      it.Name,
 		Remark:    it.Remark,
-		CreatedAt: it.CreatedAt.String(),
-		UpdatedAt: it.UpdatedAt.String(),
+		CreatedAt: utils.TimeRFC3339(it.CreatedAt),
+		UpdatedAt: utils.TimeRFC3339(it.UpdatedAt),
 	}, nil
 }
 

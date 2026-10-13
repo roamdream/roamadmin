@@ -4,94 +4,94 @@ import "github.com/gogf/gf/v2/frame/g"
 
 // MenuItem 菜单列表项。
 type MenuItem struct {
-	Id        int64  `json:"id"        dc:"菜单 ID"`
-	TenantId  int64  `json:"tenantId"  dc:"租户 ID"`
-	ParentId  int64  `json:"parentId"  dc:"父菜单 ID"`
-	Name      string `json:"name"      dc:"菜单名称"`
-	Type      string `json:"type"      dc:"类型（dir/menu/button）"`
-	Perm      string `json:"perm"      dc:"权限码"`
-	Path      string `json:"path"      dc:"路由地址"`
-	Component string `json:"component" dc:"组件路径"`
-	Icon      string `json:"icon"      dc:"图标"`
-	Sort      int    `json:"sort"      dc:"排序"`
-	Status    int    `json:"status"    dc:"状态（1启用 0禁用）"`
-	CreatedAt string `json:"createdAt" dc:"创建时间"`
+	Id        int64  `json:"id"        dc:"Menu ID"`
+	TenantId  int64  `json:"tenantId"  dc:"Tenant ID"`
+	ParentId  int64  `json:"parentId"  dc:"Parent menu ID"`
+	Name      string `json:"name"      dc:"Menu name"`
+	Type      string `json:"type"      dc:"Type (dir/menu/button)"`
+	Perm      string `json:"perm"      dc:"Permission code"`
+	Path      string `json:"path"      dc:"Route path"`
+	Component string `json:"component" dc:"Component path"`
+	Icon      string `json:"icon"      dc:"Icon"`
+	Sort      int    `json:"sort"      dc:"Sort order"`
+	Status    int    `json:"status"    dc:"Status (1 enabled, 0 disabled)"`
+	CreatedAt string `json:"createdAt" dc:"Creation time"`
 }
 
 // MenuTreeItem 菜单树节点。
 type MenuTreeItem struct {
 	*MenuItem
-	Children []*MenuTreeItem `json:"children" dc:"子菜单"`
+	Children []*MenuTreeItem `json:"children" dc:"Child menus"`
 }
 
 // MenuCreateReq 创建菜单请求。
 type MenuCreateReq struct {
-	g.Meta    `path:"/system/menu" method:"post" tags:"系统" summary:"创建菜单"`
-	ParentId  int64  `json:"parentId" d:"0" dc:"父菜单 ID（0 为根）"`
-	Name      string `json:"name" v:"required|length:1,64#菜单名称不能为空|菜单名称长度1-64" dc:"菜单名称"`
-	Type      string `json:"type" v:"required|in:dir,menu,button#类型不能为空|类型不合法" dc:"类型（dir/menu/button）"`
-	Perm      string `json:"perm" dc:"权限码"`
-	Path      string `json:"path" dc:"路由地址"`
-	Component string `json:"component" dc:"组件路径"`
-	Icon      string `json:"icon" dc:"图标"`
-	Sort      int    `json:"sort" d:"0" dc:"排序"`
-	Status    int    `json:"status" d:"1" dc:"状态（1启用 0禁用）"`
+	g.Meta    `path:"/system/menu" method:"post" tags:"system" summary:"Create menu"`
+	ParentId  int64  `json:"parentId" d:"0" dc:"Parent menu ID (0 for root)"`
+	Name      string `json:"name" v:"required|length:1,64#menu name is required|menu name length must be 1-64" dc:"Menu name"`
+	Type      string `json:"type" v:"required|in:dir,menu,button#type is required|type is invalid" dc:"Type (dir/menu/button)"`
+	Perm      string `json:"perm" dc:"Permission code"`
+	Path      string `json:"path" dc:"Route path"`
+	Component string `json:"component" dc:"Component path"`
+	Icon      string `json:"icon" dc:"Icon"`
+	Sort      int    `json:"sort" d:"0" dc:"Sort order"`
+	Status    int    `json:"status" d:"1" dc:"Status (1 enabled, 0 disabled)"`
 }
 
 // MenuCreateRes 创建菜单响应。
 type MenuCreateRes struct {
-	Id int64 `json:"id" dc:"新菜单 ID"`
+	Id int64 `json:"id" dc:"New menu ID"`
 }
 
 // MenuListReq 查询菜单树请求。
 type MenuListReq struct {
-	g.Meta `path:"/system/menu" method:"get" tags:"系统" summary:"查询菜单树"`
-	Name   string `json:"name" dc:"菜单名称模糊搜索"`
+	g.Meta `path:"/system/menu" method:"get" tags:"system" summary:"List menu tree"`
+	Name   string `json:"name" dc:"Fuzzy search by menu name"`
 }
 
 // MenuListRes 查询菜单树响应。
 type MenuListRes struct {
-	List []*MenuTreeItem `json:"list" dc:"菜单树"`
+	List []*MenuTreeItem `json:"list" dc:"Menu tree"`
 }
 
 // MenuGetReq 查询菜单请求。
 type MenuGetReq struct {
-	g.Meta `path:"/system/menu/{id}" method:"get" tags:"系统" summary:"查询菜单"`
-	Id     int64 `json:"id" in:"path" v:"required|min:1#ID不能为空|ID不合法" dc:"菜单 ID"`
+	g.Meta `path:"/system/menu/{id}" method:"get" tags:"system" summary:"Get menu"`
+	Id     int64 `json:"id" in:"path" v:"required|min:1#ID is required|ID is invalid" dc:"Menu ID"`
 }
 
 // MenuGetRes 查询菜单响应。
 type MenuGetRes struct {
-	Menu *MenuItem `json:"menu" dc:"菜单信息"`
+	Menu *MenuItem `json:"menu" dc:"Menu info"`
 }
 
 // MenuUpdateReq 更新菜单请求。
 type MenuUpdateReq struct {
-	g.Meta    `path:"/system/menu/{id}" method:"put" tags:"系统" summary:"更新菜单"`
-	Id        int64  `json:"id" in:"path" v:"required|min:1#ID不能为空|ID不合法" dc:"菜单 ID"`
-	ParentId  int64  `json:"parentId" d:"0" dc:"父菜单 ID（0 为根）"`
-	Name      string `json:"name" v:"required|length:1,64#菜单名称不能为空|菜单名称长度1-64" dc:"菜单名称"`
-	Type      string `json:"type" v:"required|in:dir,menu,button#类型不能为空|类型不合法" dc:"类型（dir/menu/button）"`
-	Perm      string `json:"perm" dc:"权限码"`
-	Path      string `json:"path" dc:"路由地址"`
-	Component string `json:"component" dc:"组件路径"`
-	Icon      string `json:"icon" dc:"图标"`
-	Sort      int    `json:"sort" d:"0" dc:"排序"`
-	Status    int    `json:"status" d:"1" dc:"状态（1启用 0禁用）"`
+	g.Meta    `path:"/system/menu/{id}" method:"put" tags:"system" summary:"Update menu"`
+	Id        int64  `json:"id" in:"path" v:"required|min:1#ID is required|ID is invalid" dc:"Menu ID"`
+	ParentId  int64  `json:"parentId" d:"0" dc:"Parent menu ID (0 for root)"`
+	Name      string `json:"name" v:"required|length:1,64#menu name is required|menu name length must be 1-64" dc:"Menu name"`
+	Type      string `json:"type" v:"required|in:dir,menu,button#type is required|type is invalid" dc:"Type (dir/menu/button)"`
+	Perm      string `json:"perm" dc:"Permission code"`
+	Path      string `json:"path" dc:"Route path"`
+	Component string `json:"component" dc:"Component path"`
+	Icon      string `json:"icon" dc:"Icon"`
+	Sort      int    `json:"sort" d:"0" dc:"Sort order"`
+	Status    int    `json:"status" d:"1" dc:"Status (1 enabled, 0 disabled)"`
 }
 
 // MenuUpdateRes 更新菜单响应。
 type MenuUpdateRes struct {
-	Updated bool `json:"updated" dc:"是否已更新"`
+	Updated bool `json:"updated" dc:"Whether updated"`
 }
 
 // MenuDeleteReq 删除菜单请求。
 type MenuDeleteReq struct {
-	g.Meta `path:"/system/menu/{id}" method:"delete" tags:"系统" summary:"删除菜单"`
-	Id     int64 `json:"id" in:"path" v:"required|min:1#ID不能为空|ID不合法" dc:"菜单 ID"`
+	g.Meta `path:"/system/menu/{id}" method:"delete" tags:"system" summary:"Delete menu"`
+	Id     int64 `json:"id" in:"path" v:"required|min:1#ID is required|ID is invalid" dc:"Menu ID"`
 }
 
 // MenuDeleteRes 删除菜单响应。
 type MenuDeleteRes struct {
-	Deleted bool `json:"deleted" dc:"是否已删除"`
+	Deleted bool `json:"deleted" dc:"Whether deleted"`
 }

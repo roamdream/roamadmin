@@ -5,6 +5,7 @@ import (
 
 	"github.com/gogf/gf/v2/net/ghttp"
 
+	"github.com/roamdream/roamadmin/kernel/utils"
 	"github.com/roamdream/roamadmin/modules/system/api"
 	"github.com/roamdream/roamadmin/modules/system/internal/model"
 	"github.com/roamdream/roamadmin/modules/system/internal/service"
@@ -36,7 +37,7 @@ func (c *OperLog) List(ctx context.Context, req *api.OperLogListReq) (*api.OperL
 			IP:        it.IP,
 			Status:    it.Status,
 			ErrMsg:    it.ErrMsg,
-			CreatedAt: it.CreatedAt.String(),
+			CreatedAt: utils.TimeRFC3339(it.CreatedAt),
 		})
 	}
 	return &api.OperLogListRes{List: out, Total: total, Page: req.Page, Size: req.Size}, nil
@@ -45,7 +46,7 @@ func (c *OperLog) List(ctx context.Context, req *api.OperLogListReq) (*api.OperL
 // Clear 清空操作日志。
 func (c *OperLog) Clear(ctx context.Context, req *api.OperLogClearReq) (*api.OperLogClearRes, error) {
 	n, err := service.ClearOperLog(ctx)
-	writeOper(ctx, "操作日志", "清空", err)
+	writeOper(ctx, "operlog", "clear", err)
 	if err != nil {
 		return nil, err
 	}
@@ -85,8 +86,8 @@ func recordLogin(ctx context.Context, status int, errMsg string, userID, tenantI
 		method, path, ip = r.Method, r.URL.Path, r.GetClientIp()
 	}
 	service.RecordOper(ctx, &model.OperLog{
-		Module:   "认证",
-		Action:   "登录",
+		Module:   "auth",
+		Action:   "login",
 		Method:   method,
 		Path:     path,
 		IP:       ip,

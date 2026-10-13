@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 
+	"github.com/roamdream/roamadmin/kernel/utils"
 	"github.com/roamdream/roamadmin/modules/system/api"
 	"github.com/roamdream/roamadmin/modules/system/internal/model"
 	"github.com/roamdream/roamadmin/modules/system/internal/service"
@@ -22,7 +23,7 @@ func (c *Role) Create(ctx context.Context, req *api.RoleCreateReq) (*api.RoleCre
 		Status: req.Status,
 		Remark: req.Remark,
 	})
-	writeOper(ctx, "角色", "创建", err)
+	writeOper(ctx, "role", "create", err)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +45,7 @@ func (c *Role) List(ctx context.Context, req *api.RoleListReq) (*api.RoleListRes
 			Code:      it.Code,
 			Status:    it.Status,
 			Remark:    it.Remark,
-			CreatedAt: it.CreatedAt.String(),
+			CreatedAt: utils.TimeRFC3339(it.CreatedAt),
 		})
 	}
 	return &api.RoleListRes{List: out, Total: total, Page: req.Page, Size: req.Size}, nil
@@ -64,7 +65,7 @@ func (c *Role) Get(ctx context.Context, req *api.RoleGetReq) (*api.RoleGetRes, e
 			Code:      role.Code,
 			Status:    role.Status,
 			Remark:    role.Remark,
-			CreatedAt: role.CreatedAt.String(),
+			CreatedAt: utils.TimeRFC3339(role.CreatedAt),
 		},
 		MenuIds: menuIds,
 	}, nil
@@ -78,7 +79,7 @@ func (c *Role) Update(ctx context.Context, req *api.RoleUpdateReq) (*api.RoleUpd
 		Status: req.Status,
 		Remark: req.Remark,
 	})
-	writeOper(ctx, "角色", "更新", err)
+	writeOper(ctx, "role", "update", err)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +89,7 @@ func (c *Role) Update(ctx context.Context, req *api.RoleUpdateReq) (*api.RoleUpd
 // Delete 删除角色。
 func (c *Role) Delete(ctx context.Context, req *api.RoleDeleteReq) (*api.RoleDeleteRes, error) {
 	err := service.DeleteRole(ctx, req.Id)
-	writeOper(ctx, "角色", "删除", err)
+	writeOper(ctx, "role", "delete", err)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +99,7 @@ func (c *Role) Delete(ctx context.Context, req *api.RoleDeleteReq) (*api.RoleDel
 // AssignMenus 为角色分配菜单权限。
 func (c *Role) AssignMenus(ctx context.Context, req *api.RoleAssignMenuReq) (*api.RoleAssignMenuRes, error) {
 	err := service.AssignRoleMenus(ctx, req.Id, req.MenuIds)
-	writeOper(ctx, "角色", "分配权限", err)
+	writeOper(ctx, "role", "assign menus", err)
 	if err != nil {
 		return nil, err
 	}

@@ -18,6 +18,11 @@ func main() {
 
 	s := g.Server()
 
+	// OpenAPI 文档元信息（英文）。swagger/接口描述统一英文，前端再按需做多语言。
+	s.GetOpenApi().Info.Title = "RoamAdmin API"
+	s.GetOpenApi().Info.Version = version
+	s.GetOpenApi().Info.Description = "RoamAdmin backend REST API. All endpoints return a unified envelope and English messages; timestamps are RFC3339 UTC."
+
 	// 全局中间件（注册顺序即执行顺序，由外到内）：
 	//   可观测（panic 隔离 + metrics + traceId）→ 认证（JWT 注入用户）→ 统一响应体。
 	s.Use(ra.Observ().Middleware, ra.Auth().Middleware, errcode.Middleware)

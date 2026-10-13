@@ -19,10 +19,10 @@ func Login(ctx context.Context, username, password string) (string, *model.UserI
 		return "", nil, errcode.Wrap(errcode.CodeDB, err)
 	}
 	if user.Id == 0 || !utils.VerifyPassword(user.Password, password) {
-		return "", nil, errcode.New(errcode.CodeLoginFailed, "用户名或密码错误")
+		return "", nil, errcode.New(errcode.CodeLoginFailed, "invalid username or password")
 	}
 	if user.Status != 1 {
-		return "", nil, errcode.New(errcode.CodeUserDisabled, "用户已被禁用")
+		return "", nil, errcode.New(errcode.CodeUserDisabled, "user is disabled")
 	}
 
 	roles, perms, err := loadRolesPerms(ctx, user.TenantId, user.Id)
@@ -48,14 +48,14 @@ func Login(ctx context.Context, username, password string) (string, *model.UserI
 func GetUserInfo(ctx context.Context) (*model.UserInfo, error) {
 	c, ok := auth.UserFrom(ctx)
 	if !ok {
-		return nil, errcode.New(errcode.CodeUnauthorized, "未登录")
+		return nil, errcode.New(errcode.CodeUnauthorized, "not logged in")
 	}
 	var user model.User
 	if err := ra.DB().Model(consts.TableUser).Where("id", c.UserID).Where("tenant_id", c.TenantID).Scan(&user); err != nil {
 		return nil, errcode.Wrap(errcode.CodeDB, err)
 	}
 	if user.Id == 0 {
-		return nil, errcode.New(errcode.CodeNotFound, "用户不存在")
+		return nil, errcode.New(errcode.CodeNotFound, "user not found")
 	}
 	roles, perms, err := loadRolesPerms(ctx, c.TenantID, c.UserID)
 	if err != nil {

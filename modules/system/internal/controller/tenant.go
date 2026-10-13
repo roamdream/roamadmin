@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 
+	"github.com/roamdream/roamadmin/kernel/utils"
 	"github.com/roamdream/roamadmin/modules/system/api"
 	"github.com/roamdream/roamadmin/modules/system/internal/model"
 	"github.com/roamdream/roamadmin/modules/system/internal/service"
@@ -22,7 +23,7 @@ func (c *Tenant) Create(ctx context.Context, req *api.TenantCreateReq) (*api.Ten
 		Status: req.Status,
 		Remark: req.Remark,
 	})
-	writeOper(ctx, "租户", "创建", err)
+	writeOper(ctx, "tenant", "create", err)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +44,7 @@ func (c *Tenant) List(ctx context.Context, req *api.TenantListReq) (*api.TenantL
 			Code:      it.Code,
 			Status:    it.Status,
 			Remark:    it.Remark,
-			CreatedAt: it.CreatedAt.String(),
+			CreatedAt: utils.TimeRFC3339(it.CreatedAt),
 		})
 	}
 	return &api.TenantListRes{List: out, Total: total, Page: req.Page, Size: req.Size}, nil
@@ -61,7 +62,7 @@ func (c *Tenant) Get(ctx context.Context, req *api.TenantGetReq) (*api.TenantGet
 		Code:      it.Code,
 		Status:    it.Status,
 		Remark:    it.Remark,
-		CreatedAt: it.CreatedAt.String(),
+		CreatedAt: utils.TimeRFC3339(it.CreatedAt),
 	}}, nil
 }
 
@@ -73,7 +74,7 @@ func (c *Tenant) Update(ctx context.Context, req *api.TenantUpdateReq) (*api.Ten
 		Status: req.Status,
 		Remark: req.Remark,
 	})
-	writeOper(ctx, "租户", "更新", err)
+	writeOper(ctx, "tenant", "update", err)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +84,7 @@ func (c *Tenant) Update(ctx context.Context, req *api.TenantUpdateReq) (*api.Ten
 // Delete 删除租户。
 func (c *Tenant) Delete(ctx context.Context, req *api.TenantDeleteReq) (*api.TenantDeleteRes, error) {
 	err := service.DeleteTenant(ctx, req.Id)
-	writeOper(ctx, "租户", "删除", err)
+	writeOper(ctx, "tenant", "delete", err)
 	if err != nil {
 		return nil, err
 	}

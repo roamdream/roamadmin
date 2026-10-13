@@ -20,7 +20,7 @@ import (
 func CreateRole(ctx context.Context, role *model.Role) (int64, error) {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return 0, errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return 0, errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 
 	lockKey := fmt.Sprintf("%s%d:%s", consts.CachePrefixRole, tenantID, role.Code)
@@ -33,7 +33,7 @@ func CreateRole(ctx context.Context, role *model.Role) (int64, error) {
 	if exists, err := roleCodeExists(ctx, tenantID, role.Code, 0); err != nil {
 		return 0, err
 	} else if exists {
-		return 0, errcode.New(errcode.CodeDuplicate, "角色编码已存在")
+		return 0, errcode.New(errcode.CodeDuplicate, "role code already exists")
 	}
 
 	id := ra.DB().NextID()
@@ -57,7 +57,7 @@ func CreateRole(ctx context.Context, role *model.Role) (int64, error) {
 func ListRole(ctx context.Context, page, size int, name string) ([]*model.Role, int64, error) {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return nil, 0, errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return nil, 0, errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 	if page <= 0 {
 		page = 1
@@ -84,14 +84,14 @@ func ListRole(ctx context.Context, page, size int, name string) ([]*model.Role, 
 func GetRole(ctx context.Context, id int64) (*model.Role, []int64, error) {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return nil, nil, errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return nil, nil, errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 	var role model.Role
 	if err := ra.DB().Model(consts.TableRole).Where("id", id).Where("tenant_id", tenantID).Scan(&role); err != nil {
 		return nil, nil, errcode.Wrap(errcode.CodeDB, err)
 	}
 	if role.Id == 0 {
-		return nil, nil, errcode.New(errcode.CodeNotFound, "角色不存在")
+		return nil, nil, errcode.New(errcode.CodeNotFound, "role not found")
 	}
 
 	var menuRows []struct {
@@ -115,7 +115,7 @@ func GetRole(ctx context.Context, id int64) (*model.Role, []int64, error) {
 func UpdateRole(ctx context.Context, role *model.Role) error {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 	if _, err := ra.DB().Model(consts.TableRole).
 		Where("id", role.Id).
@@ -135,7 +135,7 @@ func UpdateRole(ctx context.Context, role *model.Role) error {
 func DeleteRole(ctx context.Context, id int64) error {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 	err := ra.DB().Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		if _, err := tx.Model(consts.TableRoleMenu).
@@ -168,14 +168,14 @@ func DeleteRole(ctx context.Context, id int64) error {
 func AssignRoleMenus(ctx context.Context, roleID int64, menuIds []int64) error {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 	n, err := ra.DB().Model(consts.TableRole).Where("id", roleID).Where("tenant_id", tenantID).Count()
 	if err != nil {
 		return errcode.Wrap(errcode.CodeDB, err)
 	}
 	if n == 0 {
-		return errcode.New(errcode.CodeNotFound, "角色不存在")
+		return errcode.New(errcode.CodeNotFound, "role not found")
 	}
 
 	err = ra.DB().Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {

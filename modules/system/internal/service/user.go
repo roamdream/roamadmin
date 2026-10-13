@@ -20,7 +20,7 @@ import (
 func CreateUser(ctx context.Context, user *model.User, roleIds []int64) (int64, error) {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return 0, errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return 0, errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 
 	// 分布式锁：同一用户名串行化，防止并发创建同名用户。
@@ -33,7 +33,7 @@ func CreateUser(ctx context.Context, user *model.User, roleIds []int64) (int64, 
 	if exists, err := userExists(ctx, user.Username, 0); err != nil {
 		return 0, err
 	} else if exists {
-		return 0, errcode.New(errcode.CodeDuplicate, "用户名已存在")
+		return 0, errcode.New(errcode.CodeDuplicate, "username already exists")
 	}
 
 	hash, err := utils.HashPassword(user.Password)
@@ -72,7 +72,7 @@ func CreateUser(ctx context.Context, user *model.User, roleIds []int64) (int64, 
 func UpdateUser(ctx context.Context, user *model.User, roleIds []int64) error {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 
 	unlock, err := ra.Lock().Lock(ctx, consts.CachePrefixUser+user.Username, 5*time.Second)
@@ -84,7 +84,7 @@ func UpdateUser(ctx context.Context, user *model.User, roleIds []int64) error {
 	if exists, err := userExists(ctx, user.Username, user.Id); err != nil {
 		return err
 	} else if exists {
-		return errcode.New(errcode.CodeDuplicate, "用户名已存在")
+		return errcode.New(errcode.CodeDuplicate, "username already exists")
 	}
 
 	now := gtime.Now()
@@ -122,7 +122,7 @@ func UpdateUser(ctx context.Context, user *model.User, roleIds []int64) error {
 func ListUser(ctx context.Context, page, size int, username, nickname string, status *int) ([]*model.User, int64, error) {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return nil, 0, errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return nil, 0, errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 	if page <= 0 {
 		page = 1
@@ -155,14 +155,14 @@ func ListUser(ctx context.Context, page, size int, username, nickname string, st
 func GetUser(ctx context.Context, id int64) (*model.User, []int64, error) {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return nil, nil, errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return nil, nil, errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 	var user model.User
 	if err := ra.DB().Model(consts.TableUser).Where("id", id).Where("tenant_id", tenantID).Scan(&user); err != nil {
 		return nil, nil, errcode.Wrap(errcode.CodeDB, err)
 	}
 	if user.Id == 0 {
-		return nil, nil, errcode.New(errcode.CodeNotFound, "用户不存在")
+		return nil, nil, errcode.New(errcode.CodeNotFound, "user not found")
 	}
 
 	var roleRows []struct {
@@ -186,7 +186,7 @@ func GetUser(ctx context.Context, id int64) (*model.User, []int64, error) {
 func DeleteUser(ctx context.Context, id int64) error {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 	err := ra.DB().Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		if _, err := tx.Model(consts.TableUserRole).
@@ -213,7 +213,7 @@ func DeleteUser(ctx context.Context, id int64) error {
 func ResetUserPassword(ctx context.Context, id int64, password string) error {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 	hash, err := utils.HashPassword(password)
 	if err != nil {
@@ -233,7 +233,7 @@ func ResetUserPassword(ctx context.Context, id int64, password string) error {
 func SetUserStatus(ctx context.Context, id int64, status int) error {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 	if _, err := ra.DB().Model(consts.TableUser).
 		Where("id", id).

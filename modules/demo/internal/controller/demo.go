@@ -6,6 +6,7 @@ import (
 
 	"github.com/gogf/gf/v2/os/gtime"
 
+	"github.com/roamdream/roamadmin/kernel/utils"
 	"github.com/roamdream/roamadmin/modules/demo/api"
 	"github.com/roamdream/roamadmin/modules/demo/internal/service"
 )
@@ -21,7 +22,7 @@ func (c *Controller) Ping(ctx context.Context, req *api.PingReq) (*api.PingRes, 
 	return &api.PingRes{
 		Module:  "demo",
 		Version: "v0.1.0",
-		Time:    gtime.Now().String(),
+		Time:    utils.TimeRFC3339(gtime.Now()),
 	}, nil
 }
 
@@ -46,7 +47,7 @@ func (c *Controller) List(ctx context.Context, req *api.ListReq) (*api.ListRes, 
 			Id:        it.Id,
 			Name:      it.Name,
 			Remark:    it.Remark,
-			CreatedAt: it.CreatedAt.String(),
+			CreatedAt: utils.TimeRFC3339(it.CreatedAt),
 		})
 	}
 	return &api.ListRes{List: out, Total: total, Page: req.Page, Size: req.Size}, nil
@@ -62,7 +63,7 @@ func (c *Controller) Get(ctx context.Context, req *api.GetReq) (*api.Item, error
 		Id:        it.Id,
 		Name:      it.Name,
 		Remark:    it.Remark,
-		CreatedAt: it.CreatedAt.String(),
+		CreatedAt: utils.TimeRFC3339(it.CreatedAt),
 	}, nil
 }
 

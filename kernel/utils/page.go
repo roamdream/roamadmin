@@ -8,8 +8,8 @@ const (
 
 // PageReq 通用分页请求。
 type PageReq struct {
-	Page int `json:"page" d:"1"  v:"min:1#页码最小为1"`
-	Size int `json:"size" d:"20" v:"min:1|max:200#每页最小为1|每页最大为200"`
+	Page int `json:"page" d:"1"  v:"min:1#page must be at least 1"`
+	Size int `json:"size" d:"20" v:"min:1|max:200#page size must be at least 1|page size must be at most 200"`
 }
 
 // Normalize 归一化非法分页参数。

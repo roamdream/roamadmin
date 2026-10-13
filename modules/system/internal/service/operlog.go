@@ -17,7 +17,7 @@ import (
 func ListOperLog(ctx context.Context, page, size int, username, module string, status *int) ([]*model.OperLog, int64, error) {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return nil, 0, errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return nil, 0, errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 	if page <= 0 {
 		page = 1
@@ -50,7 +50,7 @@ func ListOperLog(ctx context.Context, page, size int, username, module string, s
 func ClearOperLog(ctx context.Context) (int64, error) {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return 0, errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return 0, errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 	res, err := ra.DB().Model(consts.TableOperLog).Where("tenant_id", tenantID).Delete()
 	if err != nil {

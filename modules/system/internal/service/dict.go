@@ -19,7 +19,7 @@ import (
 func CreateDictType(ctx context.Context, in *model.DictType) (int64, error) {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return 0, errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return 0, errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 
 	lockKey := fmt.Sprintf("%s%d:%s", consts.CachePrefixDict, tenantID, in.Type)
@@ -32,7 +32,7 @@ func CreateDictType(ctx context.Context, in *model.DictType) (int64, error) {
 	if exists, err := dictTypeExists(ctx, tenantID, in.Type, 0); err != nil {
 		return 0, err
 	} else if exists {
-		return 0, errcode.New(errcode.CodeDuplicate, "字典类型编码已存在")
+		return 0, errcode.New(errcode.CodeDuplicate, "dict type code already exists")
 	}
 
 	id := ra.DB().NextID()
@@ -54,7 +54,7 @@ func CreateDictType(ctx context.Context, in *model.DictType) (int64, error) {
 func ListDictType(ctx context.Context, page, size int, name string) ([]*model.DictType, int64, error) {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return nil, 0, errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return nil, 0, errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 	if page <= 0 {
 		page = 1
@@ -81,14 +81,14 @@ func ListDictType(ctx context.Context, page, size int, name string) ([]*model.Di
 func GetDictType(ctx context.Context, id int64) (*model.DictType, error) {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return nil, errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return nil, errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 	var in model.DictType
 	if err := ra.DB().Model(consts.TableDictType).Where("id", id).Where("tenant_id", tenantID).Scan(&in); err != nil {
 		return nil, errcode.Wrap(errcode.CodeDB, err)
 	}
 	if in.Id == 0 {
-		return nil, errcode.New(errcode.CodeNotFound, "字典类型不存在")
+		return nil, errcode.New(errcode.CodeNotFound, "dict type not found")
 	}
 	return &in, nil
 }
@@ -97,7 +97,7 @@ func GetDictType(ctx context.Context, id int64) (*model.DictType, error) {
 func UpdateDictType(ctx context.Context, in *model.DictType) error {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 	if _, err := ra.DB().Model(consts.TableDictType).
 		Where("id", in.Id).
@@ -113,14 +113,14 @@ func UpdateDictType(ctx context.Context, in *model.DictType) error {
 func DeleteDictType(ctx context.Context, id int64) error {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 	var in model.DictType
 	if err := ra.DB().Model(consts.TableDictType).Where("id", id).Where("tenant_id", tenantID).Scan(&in); err != nil {
 		return errcode.Wrap(errcode.CodeDB, err)
 	}
 	if in.Id == 0 {
-		return errcode.New(errcode.CodeNotFound, "字典类型不存在")
+		return errcode.New(errcode.CodeNotFound, "dict type not found")
 	}
 	if _, err := ra.DB().Model(consts.TableDictData).
 		Where("dict_type", in.Type).
@@ -141,7 +141,7 @@ func DeleteDictType(ctx context.Context, id int64) error {
 func CreateDictData(ctx context.Context, in *model.DictData) (int64, error) {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return 0, errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return 0, errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 	id := ra.DB().NextID()
 	if _, err := ra.DB().Model(consts.TableDictData).Data(g.Map{
@@ -164,7 +164,7 @@ func CreateDictData(ctx context.Context, in *model.DictData) (int64, error) {
 func ListDictData(ctx context.Context, page, size int, dictType, label string) ([]*model.DictData, int64, error) {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return nil, 0, errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return nil, 0, errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 	if page <= 0 {
 		page = 1
@@ -194,14 +194,14 @@ func ListDictData(ctx context.Context, page, size int, dictType, label string) (
 func GetDictData(ctx context.Context, id int64) (*model.DictData, error) {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return nil, errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return nil, errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 	var in model.DictData
 	if err := ra.DB().Model(consts.TableDictData).Where("id", id).Where("tenant_id", tenantID).Scan(&in); err != nil {
 		return nil, errcode.Wrap(errcode.CodeDB, err)
 	}
 	if in.Id == 0 {
-		return nil, errcode.New(errcode.CodeNotFound, "字典数据不存在")
+		return nil, errcode.New(errcode.CodeNotFound, "dict data not found")
 	}
 	return &in, nil
 }
@@ -210,7 +210,7 @@ func GetDictData(ctx context.Context, id int64) (*model.DictData, error) {
 func UpdateDictData(ctx context.Context, in *model.DictData) error {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 	if _, err := ra.DB().Model(consts.TableDictData).
 		Where("id", in.Id).
@@ -232,7 +232,7 @@ func UpdateDictData(ctx context.Context, in *model.DictData) error {
 func DeleteDictData(ctx context.Context, id int64) error {
 	tenantID, ok := auth.TenantFrom(ctx)
 	if !ok {
-		return errcode.New(errcode.CodeTenantMissing, "缺失租户上下文")
+		return errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 	if _, err := ra.DB().Model(consts.TableDictData).
 		Where("id", id).

@@ -26,7 +26,8 @@ database:
     user: "root"
     pass: "root"
     charset: "utf8mb4"
-    timezone: "Local"
+    # 时区：UTC。数据库统一存储 UTC，接口统一返回 RFC3339(UTC)，前端转本地时区显示。
+    timezone: "UTC"
     debug: false
     # 高并发推荐值（内核已收敛默认，运维可调）
     maxOpenConnCount: 200

@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 
+	"github.com/roamdream/roamadmin/kernel/utils"
 	"github.com/roamdream/roamadmin/modules/system/api"
 	"github.com/roamdream/roamadmin/modules/system/internal/model"
 	"github.com/roamdream/roamadmin/modules/system/internal/service"
@@ -24,7 +25,7 @@ func (c *Dict) CreateType(ctx context.Context, req *api.DictTypeCreateReq) (*api
 		Status: req.Status,
 		Remark: req.Remark,
 	})
-	writeOper(ctx, "字典", "创建类型", err)
+	writeOper(ctx, "dict", "create type", err)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +47,7 @@ func (c *Dict) ListType(ctx context.Context, req *api.DictTypeListReq) (*api.Dic
 			Type:      it.Type,
 			Status:    it.Status,
 			Remark:    it.Remark,
-			CreatedAt: it.CreatedAt.String(),
+			CreatedAt: utils.TimeRFC3339(it.CreatedAt),
 		})
 	}
 	return &api.DictTypeListRes{List: out, Total: total, Page: req.Page, Size: req.Size}, nil
@@ -65,7 +66,7 @@ func (c *Dict) GetType(ctx context.Context, req *api.DictTypeGetReq) (*api.DictT
 		Type:      it.Type,
 		Status:    it.Status,
 		Remark:    it.Remark,
-		CreatedAt: it.CreatedAt.String(),
+		CreatedAt: utils.TimeRFC3339(it.CreatedAt),
 	}}, nil
 }
 
@@ -77,7 +78,7 @@ func (c *Dict) UpdateType(ctx context.Context, req *api.DictTypeUpdateReq) (*api
 		Status: req.Status,
 		Remark: req.Remark,
 	})
-	writeOper(ctx, "字典", "更新类型", err)
+	writeOper(ctx, "dict", "update type", err)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +88,7 @@ func (c *Dict) UpdateType(ctx context.Context, req *api.DictTypeUpdateReq) (*api
 // DeleteType 删除字典类型。
 func (c *Dict) DeleteType(ctx context.Context, req *api.DictTypeDeleteReq) (*api.DictTypeDeleteRes, error) {
 	err := service.DeleteDictType(ctx, req.Id)
-	writeOper(ctx, "字典", "删除类型", err)
+	writeOper(ctx, "dict", "delete type", err)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +107,7 @@ func (c *Dict) CreateData(ctx context.Context, req *api.DictDataCreateReq) (*api
 		Status:   req.Status,
 		Remark:   req.Remark,
 	})
-	writeOper(ctx, "字典", "创建数据", err)
+	writeOper(ctx, "dict", "create data", err)
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +165,7 @@ func (c *Dict) UpdateData(ctx context.Context, req *api.DictDataUpdateReq) (*api
 		Status:   req.Status,
 		Remark:   req.Remark,
 	})
-	writeOper(ctx, "字典", "更新数据", err)
+	writeOper(ctx, "dict", "update data", err)
 	if err != nil {
 		return nil, err
 	}
@@ -174,7 +175,7 @@ func (c *Dict) UpdateData(ctx context.Context, req *api.DictDataUpdateReq) (*api
 // DeleteData 删除字典数据。
 func (c *Dict) DeleteData(ctx context.Context, req *api.DictDataDeleteReq) (*api.DictDataDeleteRes, error) {
 	err := service.DeleteDictData(ctx, req.Id)
-	writeOper(ctx, "字典", "删除数据", err)
+	writeOper(ctx, "dict", "delete data", err)
 	if err != nil {
 		return nil, err
 	}

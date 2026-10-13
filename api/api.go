@@ -6,10 +6,10 @@ package api
 
 // IdReq 通用主键请求（按 ID 查询 / 删除单条）。
 type IdReq struct {
-	Id int64 `json:"id" v:"required|min:1#ID不能为空|ID不合法"`
+	Id int64 `json:"id" v:"required|min:1#ID is required|ID is invalid"`
 }
 
 // IdsReq 通用主键列表请求（批量删除）。
 type IdsReq struct {
-	Ids []int64 `json:"ids" v:"required#ID列表不能为空"`
+	Ids []int64 `json:"ids" v:"required#ID list is required"`
 }
