@@ -1,0 +1,55 @@
+# RoamAdmin 统一配置（多环境可覆盖：config.yaml → config.${RA_ENV}.yaml）
+server:
+  address: ":8600"
+  openapiPath: "/api.json"
+  swaggerPath: "/swagger"
+  dumpRouterMap: false
+  readTimeout: "60s"
+  writeTimeout: "60s"
+  idleTimeout: "120s"
+  maxHeaderBytes: "1MB"
+
+logger:
+  level: "all"
+  stdout: true
+  path: "logs"
+  file: "{Y-m-d}.log"
+  rotateSize: "100MB"
+
+# 数据库：MySQL 8 / PostgreSQL 一键切换（type: mysql | pgsql）
+database:
+  default:
+    type: "mysql"
+    host: "127.0.0.1"
+    port: "3306"
+    name: "roamadmin"
+    user: "root"
+    pass: ""
+    charset: "utf8mb4"
+    debug: false
+    # 高并发推荐值（内核已收敛默认，运维可调）
+    maxOpenConnCount: 200
+    maxIdleConnCount: 50
+    maxConnLifeTime: "3600s"
+    maxIdleConnTime: "600s"
+  # 读写分离 / 多数据源：新增组即可，业务侧 db.Instance("group") 取用
+  # slave:
+  #   type: "mysql"
+  #   ...
+
+redis:
+  default:
+    address: "127.0.0.1:6379"
+    db: 0
+    pass: ""
+    minIdle: 5
+    maxIdle: 50
+    maxActive: 200
+    maxConnLifetime: "3600s"
+
+# 认证鉴权
+auth:
+  jwt:
+    secret: "please-change-me-in-production"
+    issuer: "roamadmin"
+    expireSeconds: 7200

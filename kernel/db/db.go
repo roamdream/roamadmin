@@ -11,6 +11,10 @@ import (
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 
+	// 注册数据库方言驱动：一套代码兼容 MySQL 8 / PostgreSQL。
+	_ "github.com/gogf/gf/contrib/drivers/mysql/v2"
+	_ "github.com/gogf/gf/contrib/drivers/pgsql/v2"
+
 	"github.com/roamdream/roamadmin/kernel/utils"
 )
 

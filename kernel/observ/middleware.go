@@ -7,7 +7,7 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gctx"
-	"github.com/gogf/gf/v2/util/gdebug"
+	"github.com/gogf/gf/v2/debug/gdebug"
 
 	"github.com/roamdream/roamadmin/kernel/errcode"
 )
