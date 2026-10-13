@@ -1,17 +1,17 @@
 // Package consts system 模块内部常量：表名、权限码、缓存键、路由分组。
 package consts
 
-// 表名。
+// 表名（统一 ra_ 前缀）。
 const (
-	TableUser     = "sys_user"
-	TableRole     = "sys_role"
-	TableUserRole = "sys_user_role"
-	TableMenu     = "sys_menu"
-	TableRoleMenu = "sys_role_menu"
-	TableDictType = "sys_dict_type"
-	TableDictData = "sys_dict_data"
-	TableTenant   = "sys_tenant"
-	TableOperLog  = "sys_oper_log"
+	TableUser     = "ra_user"
+	TableRole     = "ra_role"
+	TableUserRole = "ra_user_role"
+	TableMenu     = "ra_menu"
+	TableRoleMenu = "ra_role_menu"
+	TableDictType = "ra_dict_type"
+	TableDictData = "ra_dict_data"
+	TableTenant   = "ra_tenant"
+	TableOperLog  = "ra_oper_log"
 )
 
 // 权限码（RBAC）：登录后写入 Claims.Perms，由 auth.RequirePermission 中间件校验。

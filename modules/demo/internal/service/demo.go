@@ -11,7 +11,7 @@ import (
 	"github.com/roamdream/roamadmin/modules/demo/internal/model"
 )
 
-const table = "demo_item"
+const table = "ra_demo_item"
 
 // Create 创建示例数据（雪花主键）。
 func Create(ctx context.Context, name, remark string) (int64, error) {

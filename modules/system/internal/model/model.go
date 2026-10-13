@@ -3,7 +3,7 @@ package model
 
 import "github.com/gogf/gf/v2/os/gtime"
 
-// User 用户实体（对应表 sys_user，租户隔离）。
+// User 用户实体（对应表 ra_user，租户隔离）。
 type User struct {
 	Id        int64       `json:"id"        orm:"id,primary"`
 	TenantId  int64       `json:"tenantId"  orm:"tenant_id"`
@@ -19,6 +19,9 @@ type User struct {
 	UpdatedAt *gtime.Time `json:"updatedAt" orm:"updated_at"`
 }
 
+// TableName 返回表名。
+func (User) TableName() string { return "ra_user" }
+
 // UserInfo 用户聚合信息（基本信息 + 角色编码 + 权限码）。
 type UserInfo struct {
 	User  *User    `json:"user"`
@@ -26,7 +29,7 @@ type UserInfo struct {
 	Perms []string `json:"perms"`
 }
 
-// Role 角色实体（对应表 sys_role，租户隔离）。
+// Role 角色实体（对应表 ra_role，租户隔离）。
 type Role struct {
 	Id        int64       `json:"id"        orm:"id,primary"`
 	TenantId  int64       `json:"tenantId"  orm:"tenant_id"`
@@ -38,7 +41,10 @@ type Role struct {
 	UpdatedAt *gtime.Time `json:"updatedAt" orm:"updated_at"`
 }
 
-// Menu 菜单/权限实体（对应表 sys_menu，租户隔离，树形）。
+// TableName 返回表名。
+func (Role) TableName() string { return "ra_role" }
+
+// Menu 菜单/权限实体（对应表 ra_menu，租户隔离，树形）。
 type Menu struct {
 	Id        int64       `json:"id"        orm:"id,primary"`
 	TenantId  int64       `json:"tenantId"  orm:"tenant_id"`
@@ -54,13 +60,16 @@ type Menu struct {
 	CreatedAt *gtime.Time `json:"createdAt" orm:"created_at"`
 }
 
+// TableName 返回表名。
+func (Menu) TableName() string { return "ra_menu" }
+
 // MenuNode 菜单树节点。
 type MenuNode struct {
 	*Menu
 	Children []*MenuNode `json:"children"`
 }
 
-// DictType 字典类型实体（对应表 sys_dict_type，租户隔离）。
+// DictType 字典类型实体（对应表 ra_dict_type，租户隔离）。
 type DictType struct {
 	Id        int64       `json:"id"        orm:"id,primary"`
 	TenantId  int64       `json:"tenantId"  orm:"tenant_id"`
@@ -71,7 +80,10 @@ type DictType struct {
 	CreatedAt *gtime.Time `json:"createdAt" orm:"created_at"`
 }
 
-// DictData 字典数据实体（对应表 sys_dict_data，租户隔离）。
+// TableName 返回表名。
+func (DictType) TableName() string { return "ra_dict_type" }
+
+// DictData 字典数据实体（对应表 ra_dict_data，租户隔离）。
 type DictData struct {
 	Id        int64       `json:"id"        orm:"id,primary"`
 	TenantId  int64       `json:"tenantId"  orm:"tenant_id"`
@@ -84,7 +96,10 @@ type DictData struct {
 	CreatedAt *gtime.Time `json:"createdAt" orm:"created_at"`
 }
 
-// Tenant 租户实体（对应表 sys_tenant，租户注册表本身，无 tenant_id）。
+// TableName 返回表名。
+func (DictData) TableName() string { return "ra_dict_data" }
+
+// Tenant 租户实体（对应表 ra_tenant，租户注册表本身，无 tenant_id）。
 type Tenant struct {
 	Id        int64       `json:"id"        orm:"id,primary"`
 	Name      string      `json:"name"      orm:"name"`
@@ -95,7 +110,10 @@ type Tenant struct {
 	UpdatedAt *gtime.Time `json:"updatedAt" orm:"updated_at"`
 }
 
-// OperLog 操作日志实体（对应表 sys_oper_log，租户隔离）。
+// TableName 返回表名。
+func (Tenant) TableName() string { return "ra_tenant" }
+
+// OperLog 操作日志实体（对应表 ra_oper_log，租户隔离）。
 type OperLog struct {
 	Id        int64       `json:"id"        orm:"id,primary"`
 	TenantId  int64       `json:"tenantId"  orm:"tenant_id"`
@@ -110,3 +128,6 @@ type OperLog struct {
 	ErrMsg    string      `json:"errMsg"    orm:"err_msg"`
 	CreatedAt *gtime.Time `json:"createdAt" orm:"created_at"`
 }
+
+// TableName 返回表名。
+func (OperLog) TableName() string { return "ra_oper_log" }
