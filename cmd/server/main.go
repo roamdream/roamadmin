@@ -9,6 +9,7 @@ import (
 	"github.com/roamdream/roamadmin/kernel/app"
 	"github.com/roamdream/roamadmin/kernel/errcode"
 	"github.com/roamdream/roamadmin/kernel/ra"
+	"github.com/roamdream/roamadmin/kernel/swaggerui"
 )
 
 const version = "0.1.0"
@@ -22,6 +23,9 @@ func main() {
 	s.GetOpenApi().Info.Title = "RoamAdmin API"
 	s.GetOpenApi().Info.Version = version
 	s.GetOpenApi().Info.Description = "RoamAdmin backend REST API. All endpoints return a unified envelope and English messages; timestamps are RFC3339 UTC."
+
+	// Swagger UI（在线调试 Try it out）：内嵌 swagger-ui-dist，零 CDN 依赖、离线可用。
+	swaggerui.Init(s, g.Cfg().MustGet(ctx, "server.openapiPath", "/api.json").String())
 
 	// 全局中间件（注册顺序即执行顺序，由外到内）：
 	//   可观测（panic 隔离 + metrics + traceId）→ 认证（JWT 注入用户）→ 统一响应体。

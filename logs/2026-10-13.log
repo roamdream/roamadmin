@@ -3,3 +3,7 @@
 2026-10-13T19:40:26.059+08:00 [INFO] {a82eff9cf013de18dbfcea426f7da5ff} [ra] RoamAdmin v0.1.0 started, 1 module(s) registered
 2026-10-13T19:41:19.252+08:00 [INFO] {840b8209fd13de181063e90ee5b68442} [ra] RoamAdmin v0.1.0 started, 1 module(s) registered
 2026-10-13T20:03:46.786+08:00 [INFO] {c40671bd3615de18340f35736195d38f} [ra] RoamAdmin v0.1.0 started, 2 module(s) registered
+2026-10-13T20:40:25.232+08:00 [INFO] {c4b284a63617de18324a3b511824d1f2} [ra] RoamAdmin v0.1.0 started, 2 module(s) registered
+2026-10-13T20:52:17.283+08:00 [INFO] {c078f36fdc17de182add5b3cb9d437d5} [ra] RoamAdmin v0.1.0 started, 2 module(s) registered
+2026-10-13T20:54:10.351+08:00 [DEBU] [swaggerui] specURL="/api.json" replaced=true
+2026-10-13T20:54:10.353+08:00 [INFO] {fc8c3ab9f617de18ceaa292468790acc} [ra] RoamAdmin v0.1.0 started, 2 module(s) registered
