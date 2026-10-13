@@ -1,0 +1,18 @@
+# 构建产物
+/bin/
+/server
+/server.exe
+*.exe
+*.test
+*.out
+
+# 运行日志
+/logs/
+*.log
+
+# IDE
+.idea/
+.vscode/
+
+# 依赖
+/vendor/

@@ -27,7 +27,7 @@
 
 | 决策点 | 结论 | 说明 |
 |---|---|---|
-| 品牌前缀 | **ra**（RoamAdmin） | facade `ra`、CLI `ra`、module `github.com/<组织>/roamadmin`、环境变量 `RA_` |
+| 品牌前缀 | **ra**（RoamAdmin） | facade `ra`、CLI `ra`、module `github.com/roamdream/roamadmin`、环境变量 `RA_` |
 | 底层底座 | **GoFrame v2** | 天然模块化/单仓聚合，自带 HTTP/gRPC/TCP/UDP 多协议 Server、gdb ORM、缓存、配置、swagger |
 | 拆分/部署形态 | **模块化单体优先** | 单二进制 + 编译期模块注册，模块边界按"未来可拆微服务"设计 |
 | 第一版范围 | **平台框架 + 后端 + API 文档** | 不含前端管理后台、不含协议接入（作为后续模块） |
@@ -41,7 +41,7 @@
 |---|---|
 | 品牌全称 | RoamAdmin |
 | 短前缀 / facade | `ra` |
-| module path | `github.com/<组织>/roamadmin` |
+| module path | `github.com/roamdream/roamadmin` |
 | CLI 工具 | `ra` |
 | 环境变量前缀 | `RA_` |
 | 日志前缀 | `[ra]` |
@@ -49,15 +49,14 @@
 门面（facade）约定——内核所有单例通过唯一的 `ra` 门面包对外暴露，业务模块面向 `ra` 编程：
 
 ```go
-import "github.com/<组织>/roamadmin/kernel/ra"
+import "github.com/roamdream/roamadmin/kernel/ra"
 
 ra.DB()                            // 数据库
 ra.Log().Info(ctx, "...")          // 日志
 ra.Cfg().MustGet(ctx, "app.name")  // 配置
 ```
 
-> 说明：仓库/目录当前名为 `goFrame`（工作名），与已存在的 GoFrame 框架撞名；
-> 品牌以 RoamAdmin/`ra` 为准，module path 采用 `github.com/<组织>/roamadmin`，目录名后续可重命名。
+> 说明：品牌以 RoamAdmin/`ra` 为准，module path 已确定为 `github.com/roamdream/roamadmin`。
 
 ---
 
@@ -157,8 +156,8 @@ func List() []Module
 ## 6. 目录结构
 
 ```
-goFrame/
-├── go.mod                     # module github.com/<组织>/roamadmin
+roamadmin/
+├── go.mod                     # module github.com/roamdream/roamadmin
 ├── cmd/
 │   └── server/
 │       ├── main.go            # 入口：装配模块 → 启动 → 优雅退出
@@ -261,16 +260,16 @@ GoFrame `gdb` 本身做方言抽象（MySQL/PG/SQLite/MSSQL/Oracle 一套代码�
 # manifest/config/config.yaml (示例)
 database:
   default:
-    type: mysql          # mysql | pgsql
+    type: mysql              # mysql | pgsql
     host: 127.0.0.1
     port: 3306
-    name: goframe
+    name: roamadmin
     user: root
     pass: ""
     # 高并发推荐值（内核已收敛默认）
-    maxOpenConns: 200
-    maxIdleConns: 50
-    connMaxLifetime: 3600
+    maxOpenConnCount: 200
+    maxIdleConnCount: 50
+    maxConnLifeTime: "3600s"
 ```
 
 ---
