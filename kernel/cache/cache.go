@@ -9,6 +9,9 @@ import (
 	"github.com/gogf/gf/v2/database/gredis"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gcache"
+
+	// 注册 gredis 适配器（gf v2 将 Redis 驱动拆到 contrib，需显式引入）。
+	_ "github.com/gogf/gf/contrib/nosql/redis/v2"
 )
 
 // Cache Redis 缓存。

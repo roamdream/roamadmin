@@ -78,7 +78,7 @@ func extractToken(r *ghttp.Request) string {
 }
 
 func writeError(r *ghttp.Request, status int, code errcode.Code) {
-	r.Response.WriteStatus(status)
+	r.Response.WriteHeader(status)
 	r.Response.WriteJson(errcode.Fail(code, ""))
 	r.ExitAll()
 }

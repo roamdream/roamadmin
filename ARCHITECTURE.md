@@ -267,6 +267,7 @@ database:
     name: roamadmin
     user: root
     pass: ""
+    timezone: Local          # 时区（Local / Asia/Shanghai），避免 DATETIME 被默认转 UTC
     # 高并发推荐值（内核已收敛默认）
     maxOpenConnCount: 200
     maxIdleConnCount: 50

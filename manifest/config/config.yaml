@@ -24,8 +24,9 @@ database:
     port: "3306"
     name: "roamadmin"
     user: "root"
-    pass: ""
+    pass: "root"
     charset: "utf8mb4"
+    timezone: "Local"
     debug: false
     # 高并发推荐值（内核已收敛默认，运维可调）
     maxOpenConnCount: 200
