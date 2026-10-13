@@ -2,7 +2,7 @@
 server:
   address: ":8600"
   openapiPath: "/api.json"
-  # Swagger UI（在线调试 Try it out）由 kernel/swaggerui 内嵌提供，固定挂在 /swagger，
+  # API 文档界面（Scalar，在线调试）由 kernel/swaggerui 内嵌提供，固定挂在 /swagger，
   # 无需（也不应）在此配置 swaggerPath，以免与内嵌 UI 的路由冲突。
   dumpRouterMap: false
   readTimeout: "60s"

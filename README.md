@@ -37,7 +37,7 @@ go run ./cmd/server
 | `http://127.0.0.1:8600/api/v1/demo/ping` | 连通性测试 |
 | `http://127.0.0.1:8600/metrics` | Prometheus 指标 |
 | `http://127.0.0.1:8600/api.json` | OpenAPI 规范（机器可读） |
-| `http://127.0.0.1:8600/swagger` | Swagger UI（在线调试 Try it out） |
+| `http://127.0.0.1:8600/swagger` | API 文档界面（Scalar，在线调试，内嵌、离线可用） |
 
 统一响应体：
 
@@ -52,7 +52,7 @@ roamadmin/
 ├── cmd/server/          # 入口：装配中间件 → 启动应用
 ├── kernel/              # 内核（通用能力，不依赖任何业务模块）
 │   ├── module/ errcode/ config/ logger/ db/ cache/ auth/ event/ mq/ tsdb/
-│   ├── lock/ idempotent/ pool/ limit/ observ/ utils/
+│   ├── lock/ idempotent/ pool/ limit/ observ/ utils/ swaggerui/
 │   └── ra/              # 门面：业务模块面向 ra 编程
 ├── modules/             # 业务/设备模块（可插拔）
 │   ├── system/          # 系统管理：登录/JWT、用户/角色/权限、菜单、字典、多租户、操作日志

@@ -200,7 +200,7 @@ roamadmin/
 | 数据库 | gdb → MySQL 8 / PostgreSQL | ORM 屏蔽方言差异 |
 | 缓存 | gredis + 本地缓存抽象 | |
 | 认证 | JWT + RBAC + 多租户数据隔离 | 对应 GoFly 的 SaaS 能力 |
-| API 文档 | GoFrame 自带 OpenAPI + Swagger UI | 英文文档，`/api.json` + `/swagger` 在线调试 |
+| API 文档 | GoFrame OpenAPI + Scalar | 英文文档，`/api.json` + `/swagger` 在线调试 |
 | ID | 雪花算法 | 分布式友好、跨库一致 |
 | 事件/消息 | 本地 event bus + `mq` 抽象接口 | 先落地本地，未来换 NSQ/Kafka/NATS |
 | 时序（预留） | `tsdb` 抽象接口 → TDengine / ClickHouse | IoT 命门，接口先行、实现后置 |
@@ -297,12 +297,17 @@ database:
 - **多语言在前端实现**：web 端把后端的英文文案/枚举标识映射成本地化文案，后端不做翻译。
 - 内核统一错误码默认文案已全部英文（`kernel/errcode`）。
 
-### 10.3 API 文档（OpenAPI + Swagger 在线调试）
+### 10.3 API 文档（OpenAPI + Scalar 在线调试）
 
 - GoFrame 由各模块 DTO 的 `g.Meta` **自动生成** OpenAPI 3.0 规范，服务启动后：
   - `/api.json` —— OpenAPI 规范（机器可读，供代码生成 / 联调）
-  - `/swagger` —— Swagger UI，**支持在线调试（Try it out）**
-- 文档元信息（标题 / 版本 / 描述）在 `cmd/server/main.go` 统一设置为英文。
+  - `/swagger` —— API 文档界面（Scalar），**支持在线调试**（可直接在浏览器发起请求）
+- **内嵌 Scalar**：`kernel/swaggerui` 内置 `@scalar/api-reference`（MIT）官方 standalone
+  包，界面现代美观、自带深色主题，编译期内嵌、运行时零 CDN 依赖、离线可用；并替换掉
+  GoFrame 默认只读的 Redoc 页面（Redoc 无在线调试）。`/swagger` 由该包注册，
+  `manifest/config/config.yaml` 中 **不再配置 `swaggerPath`**，避免与内嵌路由冲突。
+- 文档元信息（标题 / 版本 / 描述）在 `cmd/server/main.go` 统一设置为英文；
+  认证方案（JWT Bearer）也在此声明，界面即可填写 token 调试受保护接口。
 - **新增模块自动出文档**：新模块只要给请求/响应 DTO 写好 `g.Meta` 并注册路由，即自动
   进入 OpenAPI，无需额外维护。`gen` CLI 生成的模块自带英文 `g.Meta` 与 `v` 校验，
   生成即文档、即可在线调试。

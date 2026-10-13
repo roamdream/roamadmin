@@ -4,6 +4,7 @@ package main
 import (
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
+	"github.com/gogf/gf/v2/net/goai"
 	"github.com/gogf/gf/v2/os/gctx"
 
 	"github.com/roamdream/roamadmin/kernel/app"
@@ -24,7 +25,24 @@ func main() {
 	s.GetOpenApi().Info.Version = version
 	s.GetOpenApi().Info.Description = "RoamAdmin backend REST API. All endpoints return a unified envelope and English messages; timestamps are RFC3339 UTC."
 
-	// Swagger UI（在线调试 Try it out）：内嵌 swagger-ui-dist，零 CDN 依赖、离线可用。
+	// JWT Bearer 认证方案：API 文档界面会显示认证（bearerAuth）入口，
+	// 填入 /auth/login 返回的 token 后即可在线调试受保护接口。
+	oai := s.GetOpenApi()
+	oai.Components.SecuritySchemes = goai.SecuritySchemes{
+		"bearerAuth": goai.SecuritySchemeRef{
+			Value: &goai.SecurityScheme{
+				Type:         "http",
+				Scheme:       "bearer",
+				BearerFormat: "JWT",
+				Description:  "JWT token from POST /auth/login",
+			},
+		},
+	}
+	oai.Security = &goai.SecurityRequirements{
+		{"bearerAuth": {}},
+	}
+
+	// API 文档界面（Scalar，在线调试）：内嵌 @scalar/api-reference，零 CDN 依赖、离线可用。
 	swaggerui.Init(s, g.Cfg().MustGet(ctx, "server.openapiPath", "/api.json").String())
 
 	// 全局中间件（注册顺序即执行顺序，由外到内）：
