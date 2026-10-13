@@ -200,7 +200,7 @@ roamadmin/
 | 数据库 | gdb → MySQL 8 / PostgreSQL | ORM 屏蔽方言差异 |
 | 缓存 | gredis + 本地缓存抽象 | |
 | 认证 | JWT + RBAC + 多租户数据隔离 | 对应 GoFly 的 SaaS 能力 |
-| API 文档 | GoFrame 自带 OpenAPI + Swagger UI | 满足"只做后端 + API 文档" |
+| API 文档 | GoFrame 自带 OpenAPI + Swagger UI | 英文文档，`/api.json` + `/swagger` 在线调试 |
 | ID | 雪花算法 | 分布式友好、跨库一致 |
 | 事件/消息 | 本地 event bus + `mq` 抽象接口 | 先落地本地，未来换 NSQ/Kafka/NATS |
 | 时序（预留） | `tsdb` 抽象接口 → TDengine / ClickHouse | IoT 命门，接口先行、实现后置 |
@@ -267,7 +267,7 @@ database:
     name: roamadmin
     user: root
     pass: ""
-    timezone: Local          # 时区（Local / Asia/Shanghai），避免 DATETIME 被默认转 UTC
+    timezone: UTC            # 统一存 UTC，接口返回 RFC3339(UTC)，前端转本地时区
     # 高并发推荐值（内核已收敛默认）
     maxOpenConnCount: 200
     maxIdleConnCount: 50
@@ -276,7 +276,40 @@ database:
 
 ---
 
-## 10. 业务模块清单
+## 10. 全球化、时区与接口规范（多语言）
+
+框架从第一天起就面向全球化：**后端只输出英文，时区统一 UTC**，前端（web/app）负责
+按用户语言与本地时区做多语言文案与时间显示。
+
+### 10.1 时区与时间格式（存 UTC、返回 RFC3339(UTC)）
+
+| 项 | 约定 |
+|---|---|
+| 存储 | 数据库统一存 UTC（`database.default.timezone: UTC`，驱动 `loc=UTC`） |
+| 输出 | 接口时间字段统一返回 RFC3339(UTC)，如 `2026-10-13T12:01:15Z` |
+| 转换 | 由前端按用户本地时区转换显示，后端不感知用户时区 |
+| 实现 | 统一走 `kernel/utils.TimeRFC3339(*gtime.Time)`，禁止业务层手写时间格式化 |
+
+### 10.2 接口输出语言（后端英文、前端多语言）
+
+- **所有 API 输出一律英文**：`g.Meta` 的 `tags` / `summary` / `dc`、`v` 校验提示、
+  业务错误信息、操作日志的 `module` / `action` 等全部英文。
+- **多语言在前端实现**：web 端把后端的英文文案/枚举标识映射成本地化文案，后端不做翻译。
+- 内核统一错误码默认文案已全部英文（`kernel/errcode`）。
+
+### 10.3 API 文档（OpenAPI + Swagger 在线调试）
+
+- GoFrame 由各模块 DTO 的 `g.Meta` **自动生成** OpenAPI 3.0 规范，服务启动后：
+  - `/api.json` —— OpenAPI 规范（机器可读，供代码生成 / 联调）
+  - `/swagger` —— Swagger UI，**支持在线调试（Try it out）**
+- 文档元信息（标题 / 版本 / 描述）在 `cmd/server/main.go` 统一设置为英文。
+- **新增模块自动出文档**：新模块只要给请求/响应 DTO 写好 `g.Meta` 并注册路由，即自动
+  进入 OpenAPI，无需额外维护。`gen` CLI 生成的模块自带英文 `g.Meta` 与 `v` 校验，
+  生成即文档、即可在线调试。
+
+---
+
+## 11. 业务模块清单
 
 **通用公共模块（内核，永远有）：**
 `app` `module` `config` `logger` `db` `cache` `auth` `event` `mq` `tsdb`
@@ -289,7 +322,7 @@ database:
 
 ---
 
-## 11. 分阶段路线图
+## 12. 分阶段路线图
 
 | 阶段 | 内容 | 产出 |
 |---|---|---|
@@ -301,7 +334,7 @@ database:
 
 ---
 
-## 12. 设计原则与规范（后续优化指引）
+## 13. 设计原则与规范（后续优化指引）
 
 1. **内核不拆、业务可插** —— 通用能力永远收敛进内核；只有业务模块层才"分模块"。
 2. **接口先行、实现后置** —— 新能力（如时序库、消息队列）先在内核定义抽象接口，再落具体实现。

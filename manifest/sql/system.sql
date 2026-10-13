@@ -130,29 +130,29 @@ CREATE TABLE IF NOT EXISTS ra_oper_log (
 
 -- 初始化数据：默认租户 / 超级管理员（用户名 admin，密码 admin123，bcrypt）
 INSERT INTO ra_tenant (id, name, code, status, remark, created_at, updated_at)
-VALUES (1, '默认租户', 'default', 1, '系统内置默认租户', NOW(), NOW());
+VALUES (1, 'Default Tenant', 'default', 1, 'Built-in default tenant', NOW(), NOW());
 
 INSERT INTO ra_user (id, tenant_id, username, password, nickname, status, remark, created_at, updated_at)
-VALUES (1, 1, 'admin', '$2a$10$RSN7r8q8dTLFvAP8XuA7wuu5cE4DQ5TioHhFQ/LINsmi5Cra5nU3m', '超级管理员', 1, '内置超级管理员', NOW(), NOW());
+VALUES (1, 1, 'admin', '$2a$10$RSN7r8q8dTLFvAP8XuA7wuu5cE4DQ5TioHhFQ/LINsmi5Cra5nU3m', 'Super Admin', 1, 'Built-in super admin', NOW(), NOW());
 
 INSERT INTO ra_role (id, tenant_id, name, code, status, remark, created_at, updated_at)
-VALUES (1, 1, '超级管理员', 'super', 1, '内置超级管理员角色', NOW(), NOW());
+VALUES (1, 1, 'Super Admin', 'super', 1, 'Built-in super admin role', NOW(), NOW());
 
 INSERT INTO ra_user_role (id, user_id, role_id, tenant_id) VALUES (1, 1, 1, 1);
 
 -- 初始化菜单（租户 1）与超级管理员角色的菜单关联（权限码 RBAC）
 INSERT INTO ra_menu (id, tenant_id, parent_id, name, type, perm, path, component, icon, sort, status, created_at)
 VALUES
-    (1, 1, 0, '系统管理', 'dir', '', '', '', 'setting', 0, 1, NOW()),
-    (2, 1, 1, '用户管理', 'menu', 'system:user:list', '/system/user', '', 'user', 1, 1, NOW()),
-    (3, 1, 1, '角色管理', 'menu', 'system:role:list', '/system/role', '', 'team', 2, 1, NOW()),
-    (4, 1, 1, '菜单管理', 'menu', 'system:menu:list', '/system/menu', '', 'menu', 3, 1, NOW()),
-    (5, 1, 1, '字典管理', 'menu', 'system:dict:list', '/system/dict', '', 'book', 4, 1, NOW()),
-    (6, 1, 1, '租户管理', 'menu', 'system:tenant:list', '/system/tenant', '', 'apartment', 5, 1, NOW()),
-    (7, 1, 1, '操作日志', 'menu', 'system:operlog:list', '/system/operlog', '', 'file', 6, 1, NOW()),
-    (8, 1, 2, '用户新增', 'button', 'system:user:create', '', '', '', 1, 1, NOW()),
-    (9, 1, 2, '用户编辑', 'button', 'system:user:update', '', '', '', 2, 1, NOW()),
-    (10, 1, 2, '用户删除', 'button', 'system:user:delete', '', '', '', 3, 1, NOW());
+    (1, 1, 0, 'System', 'dir', '', '', '', 'setting', 0, 1, NOW()),
+    (2, 1, 1, 'User Management', 'menu', 'system:user:list', '/system/user', '', 'user', 1, 1, NOW()),
+    (3, 1, 1, 'Role Management', 'menu', 'system:role:list', '/system/role', '', 'team', 2, 1, NOW()),
+    (4, 1, 1, 'Menu Management', 'menu', 'system:menu:list', '/system/menu', '', 'menu', 3, 1, NOW()),
+    (5, 1, 1, 'Dict Management', 'menu', 'system:dict:list', '/system/dict', '', 'book', 4, 1, NOW()),
+    (6, 1, 1, 'Tenant Management', 'menu', 'system:tenant:list', '/system/tenant', '', 'apartment', 5, 1, NOW()),
+    (7, 1, 1, 'Operation Logs', 'menu', 'system:operlog:list', '/system/operlog', '', 'file', 6, 1, NOW()),
+    (8, 1, 2, 'Create User', 'button', 'system:user:create', '', '', '', 1, 1, NOW()),
+    (9, 1, 2, 'Edit User', 'button', 'system:user:update', '', '', '', 2, 1, NOW()),
+    (10, 1, 2, 'Delete User', 'button', 'system:user:delete', '', '', '', 3, 1, NOW());
 
 INSERT INTO ra_role_menu (id, role_id, menu_id, tenant_id)
 VALUES

@@ -13,7 +13,8 @@
 - **高并发提前内置**：协程池、分布式锁、幂等、限流/熔断、事件总线（含背压）、Prometheus metrics + traceId、统一错误码与响应体。
 - **数据库多方言兼容**：全程 ORM、雪花主键、MySQL 8 / PostgreSQL 一套代码通吃。
 - **多租户 + RBAC**：JWT 认证，用户/角色/权限/菜单/字典/租户/操作日志开箱即用。
-- **代码生成**：`gen` CLI 一键生成标准 CRUD 模块。
+- **全球化就绪**：后端接口一律英文输出，时间统一存 UTC、返回 RFC3339(UTC)，多语言与本地时区由前端实现。
+- **代码生成**：`gen` CLI 一键生成标准 CRUD 模块（生成的模块自带英文 API 文档与校验）。
 
 ## 快速开始
 
@@ -35,8 +36,8 @@ go run ./cmd/server
 |---|---|
 | `http://127.0.0.1:8600/api/v1/demo/ping` | 连通性测试 |
 | `http://127.0.0.1:8600/metrics` | Prometheus 指标 |
-| `http://127.0.0.1:8600/api.json` | OpenAPI 规范 |
-| `http://127.0.0.1:8600/swagger` | Swagger UI |
+| `http://127.0.0.1:8600/api.json` | OpenAPI 规范（机器可读） |
+| `http://127.0.0.1:8600/swagger` | Swagger UI（在线调试 Try it out） |
 
 统一响应体：
 
@@ -65,7 +66,10 @@ roamadmin/
 
 1. 新建 `modules/<name>/`，实现 `Module` 接口，`init()` 里 `module.Register(New())`；
 2. 在 `cmd/server/modules.go` 加一行 `import _ "github.com/roamdream/roamadmin/modules/<name>"`；
-3. 或直接用代码生成器：`go run ./hack/gen -m <name> -t <table> -title 标题`。
+3. 或直接用代码生成器：`go run ./hack/gen -m <name> -t <table> -title Title`（`-title` 为英文标题，缺省用模块名）。
+
+> 接口规范：所有接口输出与 API 文档（`summary`/`dc`/校验提示/错误信息）统一英文；
+> 时间字段统一 RFC3339(UTC)。新增模块写好 `g.Meta` 后，API 文档自动生成，无需额外维护。
 
 ## 路线图
 
