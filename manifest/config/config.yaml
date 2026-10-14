@@ -56,3 +56,10 @@ auth:
     secret: "please-change-me-in-production"
     issuer: "roamadmin"
     expireSeconds: 7200
+
+# MQTT 内嵌 Broker（gateway 模块启动）
+mqtt:
+  # 是否启用内嵌 broker（false 时 gateway 仅注册状态接口，不监听端口）
+  enabled: true
+  # TCP 监听地址（供设备直连；生产可用 TLS 监听器替换）
+  address: ":1883"

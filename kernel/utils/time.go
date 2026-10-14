@@ -16,3 +16,11 @@ func TimeRFC3339(t *gtime.Time) string {
 	}
 	return t.Time.UTC().Format(time.RFC3339)
 }
+
+// TimeRFC3339T 将 time.Time 序列化为 RFC3339(UTC) 字符串（零值返回空串）。
+func TimeRFC3339T(t time.Time) string {
+	if t.IsZero() {
+		return ""
+	}
+	return t.UTC().Format(time.RFC3339)
+}

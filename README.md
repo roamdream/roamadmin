@@ -28,7 +28,13 @@ go env -w GOPROXY=https://goproxy.cn,direct
 
 # 3. 编译并运行（默认 :8600）
 go run ./cmd/server
+
+# 3.1 需要 MQTT / 设备接入时，加 build tag（内嵌 broker 监听 :1883）
+go run -tags mqtt ./cmd/server
 ```
+
+> 完整的环境准备、数据库初始化、生产打包、部署上线、日常运维与常见问题排查，见
+> **[部署与运维教程](docs/deploy.md)**；按需裁剪模块（含 MQTT 开关）见 [按需裁剪模块](#按需裁剪模块)。
 
 启动后：
 
@@ -52,12 +58,14 @@ go run ./cmd/server
 roamadmin/
 ├── cmd/server/          # 入口：装配中间件 → 启动应用
 ├── kernel/              # 内核（通用能力，不依赖任何业务模块）
-│   ├── module/ errcode/ config/ logger/ db/ cache/ auth/ event/ mq/ tsdb/
+│   ├── module/ errcode/ config/ logger/ db/ cache/ auth/ event/ mq/ tsdb/ mqtt/
 │   ├── lock/ idempotent/ pool/ limit/ observ/ utils/ swaggerui/
 │   └── ra/              # 门面：业务模块面向 ra 编程
 ├── modules/             # 业务/设备模块（可插拔）
 │   ├── system/          # 系统管理：登录/JWT、用户/角色/权限、菜单、字典、多租户、操作日志
-│   └── demo/            # 示例模块（模块模板）
+│   ├── demo/            # 示例模块（模块模板）
+│   ├── device/          # IoT 设备：物模型/设备/影子/遥测（依赖 tsdb）
+│   └── gateway/         # MQTT 接入网关：内嵌 Broker 上行接入 → 事件总线分发
 ├── api/                 # 共享请求/响应结构
 ├── hack/gen/            # 代码生成 CLI
 └── manifest/            # 配置 + 建表脚本
@@ -71,6 +79,33 @@ roamadmin/
 
 > 接口规范：所有接口输出与 API 文档（`summary`/`dc`/校验提示/错误信息）统一英文；
 > 时间字段统一 RFC3339(UTC)。新增模块写好 `g.Meta` 后，API 文档自动生成，无需额外维护。
+
+## 按需裁剪模块
+
+模块化单体：增删业务模块 = 增删 `cmd/server/modules.go` 里的一行 import，未 import 的模块不注册、不进二进制。
+
+```go
+import (
+    _ "github.com/roamdream/roamadmin/modules/demo"
+    _ "github.com/roamdream/roamadmin/modules/device"   // 删掉即不带 IoT 设备能力
+    _ "github.com/roamdream/roamadmin/modules/gateway"  // 删掉即不带 MQTT 接入
+    _ "github.com/roamdream/roamadmin/modules/system"
+)
+```
+
+**重依赖（MQTT）用 Go build tag 做成可选**，默认构建不引入 `mochi-mqtt`：
+
+| 命令 | MQTT | 二进制是否含 mochi |
+|---|---|---|
+| `go build ./cmd/server` | ❌ 关 | 否 |
+| `go build -tags mqtt ./cmd/server` | ✅ 开 | 是 |
+
+机制：`kernel/mqtt` 拆成 `broker.go`（`//go:build mqtt`，真 broker）与 `broker_stub.go`
+（`//go:build !mqtt`，同签名占位）。`ra.MQTT()` 门面两种构建都能编译；未加 tag 时 `Publish` 返回错误、
+`/gateway/status` 显示 `running:false`。运行时再用 `mqtt.enabled` 二级开关控制是否真正监听 `:1883`。
+
+> 一个"不用 MQTT 也不接设备"的后台：删掉 device/gateway 两行 import，直接 `go build ./cmd/server`，
+> 产出仅含 `system`（+可选 `demo`）。详见 [部署与运维教程](docs/deploy.md)。
 
 ## 管理后台前端
 
@@ -95,7 +130,7 @@ npm run build      # 自动从后端 /api.json 重新生成接口类型，再打
 | P0 | 框架底座：monorepo / kernel / Module SPI / 配置 / 日志 / DB / 缓存 / 错误码 / 限流熔断 / 协程池 / 可观测 / 优雅关闭 / OpenAPI | ✅ |
 | P1 | `system` 模块：登录/JWT、RBAC、菜单、字典、多租户、操作日志、幂等、分布式锁 | 🚧 |
 | P2 | `demo` 模块 + `gen` 代码生成 CLI | 🚧 |
-| P3 | IoT 接入：MQTT / 设备接入 / 物模型 / `tsdb` 落地 | ⏳ |
+| P3 | IoT 接入：MQTT / 设备接入 / 物模型 / `tsdb` 落地 | ✅ |
 | P4 | 高并发增强：分布式 / 消息总线落库 / 连接池调优 / 拆微服务 | ⏳ |
 
 设计文档见 [ARCHITECTURE.md](ARCHITECTURE.md)。

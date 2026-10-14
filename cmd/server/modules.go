@@ -5,5 +5,7 @@ package main
 // 此处仅需 import 即触发注册，main 启动时由内核统一驱动其生命周期。
 import (
 	_ "github.com/roamdream/roamadmin/modules/demo"
+	_ "github.com/roamdream/roamadmin/modules/device"
+	_ "github.com/roamdream/roamadmin/modules/gateway"
 	_ "github.com/roamdream/roamadmin/modules/system"
 )

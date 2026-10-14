@@ -25,3 +25,10 @@ type Engine interface {
 	// Close 关闭连接。
 	Close(ctx context.Context) error
 }
+
+// RecentQuerier 按 measurement 查询最近数据点的能力（可选，具体后端可额外实现）。
+//
+// 设备模块据此查询某设备最近遥测；换后端时通过类型断言按需取用。
+type RecentQuerier interface {
+	QueryRecent(ctx context.Context, measurement string, limit int) ([]*Point, error)
+}

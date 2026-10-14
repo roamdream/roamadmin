@@ -21,8 +21,10 @@ import (
 	"github.com/roamdream/roamadmin/kernel/lock"
 	"github.com/roamdream/roamadmin/kernel/logger"
 	"github.com/roamdream/roamadmin/kernel/mq"
+	"github.com/roamdream/roamadmin/kernel/mqtt"
 	"github.com/roamdream/roamadmin/kernel/observ"
 	"github.com/roamdream/roamadmin/kernel/pool"
+	"github.com/roamdream/roamadmin/kernel/tsdb"
 )
 
 // DB 数据库（gdb 封装）。
@@ -94,4 +96,26 @@ var (
 func Auth() *auth.Manager {
 	authOnce.Do(func() { authMgr = auth.Default() })
 	return authMgr
+}
+
+var (
+	tsdbOnce  sync.Once
+	tsdbEngine tsdb.Engine
+)
+
+// TSDB 时序存储引擎（懒初始化）。
+func TSDB() tsdb.Engine {
+	tsdbOnce.Do(func() { tsdbEngine = tsdb.Default() })
+	return tsdbEngine
+}
+
+var (
+	mqttOnce   sync.Once
+	mqttBroker *mqtt.Broker
+)
+
+// MQTT 内嵌 MQTT Broker（懒初始化，由 gateway 模块启动）。
+func MQTT() *mqtt.Broker {
+	mqttOnce.Do(func() { mqttBroker = mqtt.New() })
+	return mqttBroker
 }
