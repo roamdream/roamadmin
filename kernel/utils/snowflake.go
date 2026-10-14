@@ -1,8 +1,11 @@
 package utils
 
 import (
+	"context"
 	"sync"
 	"time"
+
+	"github.com/gogf/gf/v2/frame/g"
 )
 
 // 雪花算法：41bit 毫秒时间戳 + 10bit 节点 ID + 12bit 序列号。
@@ -62,8 +65,18 @@ func (s *Snowflake) Next() int64 {
 		s.seq
 }
 
-// 包级默认实例（nodeID 取 1，多实例部署时请用 NewSnowflake 指定唯一节点号）。
-var defaultSnowflake = NewSnowflake(1)
+var (
+	defaultSnowflakeOnce sync.Once
+	defaultSnowflake     *Snowflake
+)
 
-// NextID 返回默认实例生成的 ID。
-func NextID() int64 { return defaultSnowflake.Next() }
+// NextID 返回默认实例生成的 ID（懒初始化：节点号读配置 snowflake.nodeId，缺省 1）。
+//
+// 多实例部署时为避免主键冲突，每个实例需配置不同的 snowflake.nodeId（0..1023）。
+func NextID() int64 {
+	defaultSnowflakeOnce.Do(func() {
+		node := g.Cfg().MustGet(context.Background(), "snowflake.nodeId", 1).Int()
+		defaultSnowflake = NewSnowflake(int64(node))
+	})
+	return defaultSnowflake.Next()
+}

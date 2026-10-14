@@ -35,6 +35,10 @@ database:
     maxIdleConnCount: 50
     maxConnLifeTime: "3600s"
     maxIdleConnTime: "600s"
+    # 操作级超时（gdb 原生支持，防慢 SQL 拖垮连接池）
+    queryTimeout: "30s"
+    execTimeout: "30s"
+    tranTimeout: "60s"
   # 读写分离 / 多数据源：新增组即可，业务侧 db.Instance("group") 取用
   # slave:
   #   type: "mysql"
@@ -49,6 +53,9 @@ redis:
     maxIdle: 50
     maxActive: 200
     maxConnLifetime: "3600s"
+    # 连接池超时：waitTimeout 必须设置（默认 0 表示池耗尽时永久阻塞，高并发高危）
+    idleTimeout: "30s"
+    waitTimeout: "5s"
 
 # 认证鉴权
 auth:
@@ -56,6 +63,24 @@ auth:
     secret: "please-change-me-in-production"
     issuer: "roamadmin"
     expireSeconds: 7200
+
+# 协程池（内核 goroutine pool，缺省 10000）
+pool:
+  size: 10000
+
+# 雪花主键节点号：多实例部署时每个实例设不同值（0..1023），避免主键冲突
+snowflake:
+  nodeId: 1
+
+# 消息总线：local（进程内内存）| redis-streams（Redis Streams 落库，跨实例消费）
+mq:
+  type: local
+  streams:
+    group: ra            # 消费者组
+    consumer: ""         # 消费者名（多实例需唯一；留空自动 hostname-pid）
+    maxLen: 100000       # 主流长度近似上限
+    dlqMaxLen: 100000    # 死信流长度近似上限
+    blockTimeout: "5s"   # XREADGROUP 阻塞时长
 
 # MQTT 内嵌 Broker（gateway 模块启动）
 mqtt:

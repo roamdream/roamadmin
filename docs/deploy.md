@@ -81,12 +81,28 @@ database:
 redis:
   default:
     address: "127.0.0.1:6379"
+    waitTimeout: "5s"       # 取连接超时（务必设置：默认 0 表示池耗尽时永久阻塞）
 
 auth:
   jwt:
     secret: "please-change-me-in-production"  # 生产必须更换
     issuer: "roamadmin"
     expireSeconds: 7200
+
+pool:
+  size: 10000               # 协程池容量（内核 goroutine pool）
+
+snowflake:
+  nodeId: 1                 # 雪花主键节点号：多实例部署时每个实例设不同值（0..1023）
+
+mq:
+  type: local               # local（进程内内存）| redis-streams（落库、跨实例消费）
+  streams:
+    group: ra               # 消费者组
+    consumer: ""            # 消费者名（多实例需唯一；留空自动 hostname-pid）
+    maxLen: 100000          # 主流长度近似上限
+    dlqMaxLen: 100000       # 死信流长度近似上限
+    blockTimeout: "5s"      # XREADGROUP 阻塞时长
 
 mqtt:
   enabled: true             # 运行时是否启动 broker（仅当用 -tags mqtt 编译时生效）
@@ -270,6 +286,20 @@ server {
 ```
 
 > MQTT 走 TCP，不能用 HTTP 反向代理，直接放行 1883 端口即可。
+
+### 8.5 横向扩容 / 多实例
+
+模块化单体可水平扩展为多实例：同一份二进制、同一套配置，仅几处参数按实例区分即可。
+
+1. **雪花节点 ID 唯一**：每实例设不同 `snowflake.nodeId`（0..1023），避免主键冲突。
+2. **共享依赖**：所有实例连同一个 MySQL + Redis；JWT 无状态，同 `auth.jwt.secret` 即可跨实例校验，无需粘性会话。
+3. **消息总线切 Redis Streams**：`mq.type: redis-streams`，上行消息落库并经消费者组分发；每实例唯一 `mq.streams.consumer`，同组内消息只被消费一次。
+4. **无状态前置负载均衡**：HTTP 走 Nginx 反代分发到多实例；MQTT 若用内嵌 broker，则每实例监听不同 MQTT 端口由设备分流（或外置独立 broker 集群统一接入）。
+
+两实例示例：实例 A `snowflake.nodeId=1`、`mq.streams.consumer=node-a`；实例 B `snowflake.nodeId=2`、`mq.streams.consumer=node-b`，其余配置一致。
+
+> 死信排查：消费返回 error 的消息进入 `ra:mq:<topic>:dlq`（原消息已 ack，不重复投递），
+> 用 `redis-cli XRANGE ra:mq:mqtt.message:dlq - +` 查看。
 
 ---
 

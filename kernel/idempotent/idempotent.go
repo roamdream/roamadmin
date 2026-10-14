@@ -12,6 +12,10 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 )
 
+// acquireScript 原子占用幂等键：SET NX PX 一次完成"占键 + 设过期"，避免 SETNX 与 EXPIRE
+// 分两步导致进程崩溃时幂等键永不回收。
+const acquireScript = `if redis.call("set", KEYS[1], ARGV[1], "NX", "PX", ARGV[2]) then return 1 else return 0 end`
+
 // Manager 幂等管理器。
 type Manager struct {
 	redis *gredis.Redis
@@ -24,20 +28,22 @@ func New(r *gredis.Redis) *Manager { return &Manager{redis: r} }
 func Default() *Manager { return &Manager{redis: g.Redis()} }
 
 // Check 检查幂等键：首次出现则占用并返回 true，重复出现返回 false。
-// ttl 控制幂等键的存活时间（即幂等窗口）。
+// ttl 控制幂等键的存活时间（即幂等窗口）；ttl<=0 表示不过期（单条 SETNX 本身原子）。
 func (m *Manager) Check(ctx context.Context, key string, ttl time.Duration) (first bool, err error) {
 	idemKey := "ra:idem:" + key
-	ok, err := m.redis.SetNX(ctx, idemKey, time.Now().UnixMilli())
+	val := time.Now().UnixMilli()
+	if ttl <= 0 {
+		ok, err := m.redis.SetNX(ctx, idemKey, val)
+		if err != nil {
+			return false, err
+		}
+		return ok, nil
+	}
+	v, err := m.redis.Do(ctx, "EVAL", acquireScript, 1, idemKey, val, ttl.Milliseconds())
 	if err != nil {
 		return false, err
 	}
-	if !ok {
-		return false, nil
-	}
-	if ttl > 0 {
-		_, _ = m.redis.Expire(ctx, idemKey, int64(ttl.Seconds()))
-	}
-	return true, nil
+	return v.Int() == 1, nil
 }
 
 // Remove 主动清除幂等键（如业务失败需回滚时）。

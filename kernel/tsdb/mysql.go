@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS ra_ts_point (
 	return err
 }
 
-// Write 批量写入数据点。
+// Write 批量写入数据点（单条多行 INSERT，提升高并发写入吞吐）。
 func (m *MySQL) Write(ctx context.Context, points ...*Point) error {
 	if len(points) == 0 {
 		return nil
@@ -50,6 +50,7 @@ func (m *MySQL) Write(ctx context.Context, points ...*Point) error {
 	if err := m.ensureSchema(ctx); err != nil {
 		return err
 	}
+	rows := make([]g.Map, 0, len(points))
 	for _, p := range points {
 		if p == nil {
 			continue
@@ -59,18 +60,19 @@ func (m *MySQL) Write(ctx context.Context, points ...*Point) error {
 		if err != nil {
 			return err
 		}
-		ts := p.Time.UTC()
-		if _, err := m.db.Model(tablePoint).Data(g.Map{
+		rows = append(rows, g.Map{
 			"id":          utils.NextID(),
 			"measurement": p.Measurement,
 			"tags":        string(tagsJSON),
 			"fields":      string(fieldsJSON),
-			"ts":          gtime.New(ts),
-		}).Insert(); err != nil {
-			return err
-		}
+			"ts":          gtime.New(p.Time.UTC()),
+		})
 	}
-	return nil
+	if len(rows) == 0 {
+		return nil
+	}
+	_, err := m.db.Model(tablePoint).Data(rows).Insert()
+	return err
 }
 
 // Query 执行原生查询，返回 gdb.Result（实现相关原始结果）。

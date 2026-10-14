@@ -5,6 +5,7 @@ package mqtt
 import (
 	"context"
 	"errors"
+	"strings"
 	"sync"
 
 	"github.com/gogf/gf/v2/frame/g"
@@ -48,7 +49,12 @@ func (b *Broker) Start(addr string) error {
 	}
 	s := mqttserver.New(opts)
 	// 内联订阅 #，捕获所有发布（含客户端上行与自身下行）。
+	// `$` 前缀为主题保留区（mochi 每秒发布约 20 条 `$SYS/broker/*` 系统消息），
+	// 非设备业务数据，必须过滤，否则会持续灌入消息总线（P4 暴露的 20/s 空转）。
 	s.Subscribe("#", 1, func(_ *mqttserver.Client, _ packets.Subscription, pk packets.Packet) {
+		if strings.HasPrefix(pk.TopicName, "$") {
+			return
+		}
 		b.mu.RLock()
 		h := b.handler
 		b.mu.RUnlock()

@@ -11,6 +11,8 @@
 
 - **模块化单体**：业务模块实现统一 `Module` SPI（`Name/Version/Init/Start/Stop`），编译期注册，增删模块 = 增删目录 + 改一行 import。
 - **高并发提前内置**：协程池、分布式锁、幂等、限流/熔断、事件总线（含背压）、Prometheus metrics + traceId、统一错误码与响应体。
+- **消息总线可落库**：`mq.type` 一行切换 `local`（内存）/ `redis-streams`（Redis Streams 持久化、跨实例消费、ack + 死信）。
+- **分布式就绪**：雪花节点 ID 可配、锁/幂等/限流原子 Lua、锁自动续租（watchdog）；协程池/连接池参数可调，池 + MQ 指标齐全。
 - **数据库多方言兼容**：全程 ORM、雪花主键、MySQL 8 / PostgreSQL 一套代码通吃。
 - **多租户 + RBAC**：JWT 认证，用户/角色/权限/菜单/字典/租户/操作日志开箱即用。
 - **全球化就绪**：后端接口一律英文输出，时间统一存 UTC、返回 RFC3339(UTC)，多语言与本地时区由前端实现。
@@ -131,6 +133,6 @@ npm run build      # 自动从后端 /api.json 重新生成接口类型，再打
 | P1 | `system` 模块：登录/JWT、RBAC、菜单、字典、多租户、操作日志、幂等、分布式锁 | 🚧 |
 | P2 | `demo` 模块 + `gen` 代码生成 CLI | 🚧 |
 | P3 | IoT 接入：MQTT / 设备接入 / 物模型 / `tsdb` 落地 | ✅ |
-| P4 | 高并发增强：分布式 / 消息总线落库 / 连接池调优 / 拆微服务 | ⏳ |
+| P4 | 高并发增强：分布式 / 消息总线落库 / 连接池调优 / 拆微服务 | ✅（拆微服务留待后续） |
 
 设计文档见 [ARCHITECTURE.md](ARCHITECTURE.md)。

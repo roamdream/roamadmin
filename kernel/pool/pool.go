@@ -5,6 +5,7 @@ package pool
 
 import (
 	"context"
+	"sync"
 
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/panjf2000/ants/v2"
@@ -42,11 +43,26 @@ func (p *Pool) Waiting() int { return p.inner.Waiting() }
 // Release 释放池资源。
 func (p *Pool) Release() { p.inner.Release() }
 
-// defaultPool 全局默认池：容量 10000，panic 自动 recover，避免单任务拖垮进程。
-var defaultPool = newDefault()
+var (
+	defaultOnce sync.Once
+	defaultPool *Pool
+)
 
-func newDefault() *Pool {
-	p, err := New(10000, ants.WithPanicHandler(func(v any) {
+// Default 返回全局默认协程池（懒初始化：容量读配置 pool.size，缺省 10000）。
+func Default() *Pool {
+	defaultOnce.Do(func() {
+		size := g.Cfg().MustGet(context.Background(), "pool.size", 10000).Int()
+		defaultPool = newDefault(size)
+	})
+	return defaultPool
+}
+
+// newDefault 创建默认池：panic 自动 recover，避免单任务拖垮进程；size<=0 时回退 10000。
+func newDefault(size int) *Pool {
+	if size <= 0 {
+		size = 10000
+	}
+	p, err := New(size, ants.WithPanicHandler(func(v any) {
 		g.Log().Errorf(context.Background(), "[ra] goroutine panic recovered: %v", v)
 	}))
 	if err != nil {
@@ -55,8 +71,5 @@ func newDefault() *Pool {
 	return p
 }
 
-// Default 返回全局默认协程池。
-func Default() *Pool { return defaultPool }
-
 // Submit 提交任务到默认池。
-func Submit(task func()) error { return defaultPool.Submit(task) }
+func Submit(task func()) error { return Default().Submit(task) }

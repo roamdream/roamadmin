@@ -12,6 +12,10 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 )
 
+// allowScript 原子限流：INCR + 首次 PEXPIRE 在一条 Lua 内完成，避免 INCR 与 EXPIRE
+// 分两步导致首次计数后窗口永不重置；返回当前窗口计数。
+const allowScript = `local n = redis.call("incr", KEYS[1]) if n == 1 then redis.call("pexpire", KEYS[1], ARGV[1]) end return n`
+
 // TokenBucket 本地令牌桶限流器（单机）。
 type TokenBucket struct {
 	mu     sync.Mutex
@@ -63,14 +67,11 @@ func Default() *RedisLimiter { return &RedisLimiter{redis: g.Redis()} }
 // Allow 固定窗口限流：window 时间窗口内最多 limit 次。
 func (l *RedisLimiter) Allow(ctx context.Context, key string, limit int64, window time.Duration) (bool, error) {
 	redisKey := "ra:limit:" + key
-	n, err := l.redis.Incr(ctx, redisKey)
+	v, err := l.redis.Do(ctx, "EVAL", allowScript, 1, redisKey, window.Milliseconds())
 	if err != nil {
 		return false, err
 	}
-	if n == 1 {
-		_, _ = l.redis.Expire(ctx, redisKey, int64(window.Seconds()))
-	}
-	return n <= limit, nil
+	return v.Int64() <= limit, nil
 }
 
 // BreakerState 熔断器状态。

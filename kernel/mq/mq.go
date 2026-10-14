@@ -1,12 +1,21 @@
 // Package mq 消息队列抽象（Producer / Consumer）。
 //
-// 内核定义统一接口，先落地本地内存实现；未来换 NSQ/Kafka/NATS 或拆微服务时
-// 业务侧零改动（仅替换实现注入）。
+// 内核定义统一接口，提供两类实现：
+//   - Local：本地内存（单机默认，异步投递）；
+//   - Streams：Redis Streams 持久化（消息落库、跨实例消费、ack + 死信）。
+//
+// 通过配置 mq.type 切换（local | redis-streams），业务侧只面向 Manager 接口编程零改动。
 package mq
 
 import (
 	"context"
+	"os"
+	"strconv"
 	"sync"
+
+	"github.com/gogf/gf/v2/frame/g"
+
+	"github.com/roamdream/roamadmin/kernel/observ"
 )
 
 // Message 消息体。
@@ -35,6 +44,27 @@ type Consumer interface {
 type Manager interface {
 	Producer
 	Consumer
+}
+
+// NewFromConfig 按配置构造消息管理器：mq.type 为 redis-streams 时用持久化实现，否则本地内存实现。
+func NewFromConfig(ctx context.Context) Manager {
+	typ := g.Cfg().MustGet(ctx, "mq.type", "local").String()
+	if typ == "redis-streams" {
+		consumer := g.Cfg().MustGet(ctx, "mq.streams.consumer", "").String()
+		if consumer == "" {
+			host, _ := os.Hostname()
+			consumer = host + "-" + strconv.Itoa(os.Getpid())
+		}
+		return NewStreams(StreamsConfig{
+			Redis:        g.Redis(),
+			Group:        g.Cfg().MustGet(ctx, "mq.streams.group", "ra").String(),
+			Consumer:     consumer,
+			MaxLen:       int64(g.Cfg().MustGet(ctx, "mq.streams.maxLen", 100000).Int()),
+			DLQMaxLen:    int64(g.Cfg().MustGet(ctx, "mq.streams.dlqMaxLen", 100000).Int()),
+			BlockTimeout: g.Cfg().MustGet(ctx, "mq.streams.blockTimeout", "5s").Duration(),
+		})
+	}
+	return NewLocal()
 }
 
 // Local 本地内存实现（单机默认，异步投递）。
@@ -68,6 +98,7 @@ func (l *Local) Send(ctx context.Context, msg *Message) error {
 	}
 	select {
 	case l.queue <- msg:
+		observ.Default().ObserveMQSend(msg.Topic)
 		return nil
 	case <-ctx.Done():
 		return ctx.Err()
@@ -101,7 +132,11 @@ func (l *Local) dispatch() {
 			l.mu.RUnlock()
 			for _, h := range handlers {
 				// 本地实现：消费失败仅记录，不影响后续消息。
-				_ = h(l.ctx, msg)
+				if err := h(l.ctx, msg); err != nil {
+					observ.Default().ObserveMQConsume(msg.Topic, "error")
+				} else {
+					observ.Default().ObserveMQConsume(msg.Topic, "ok")
+				}
 			}
 		case <-l.ctx.Done():
 			return

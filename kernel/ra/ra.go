@@ -9,6 +9,7 @@
 package ra
 
 import (
+	"context"
 	"sync"
 
 	"github.com/roamdream/roamadmin/kernel/auth"
@@ -70,9 +71,9 @@ var (
 	mqMgr   mq.Manager
 )
 
-// MQ 消息管理器（默认本地实现）。
+// MQ 消息管理器（按配置 mq.type 选择 local / redis-streams）。
 func MQ() mq.Manager {
-	mqOnce.Do(func() { mqMgr = mq.NewLocal() })
+	mqOnce.Do(func() { mqMgr = mq.NewFromConfig(context.Background()) })
 	return mqMgr
 }
 
@@ -81,9 +82,9 @@ var (
 	observMgr  *observ.Manager
 )
 
-// Observ 可观测管理器（metrics/tracing）。
+// Observ 可观测管理器（metrics/tracing，进程级唯一 registry）。
 func Observ() *observ.Manager {
-	observOnce.Do(func() { observMgr = observ.New() })
+	observOnce.Do(func() { observMgr = observ.Default() })
 	return observMgr
 }
 
