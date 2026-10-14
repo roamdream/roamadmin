@@ -16,3 +16,6 @@
 
 # 依赖
 /vendor/
+
+# 前端
+/web/node_modules/

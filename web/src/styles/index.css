@@ -1,0 +1,138 @@
+/* ===== RoamAdmin 全局主题 =====
+ * 现代 Indigo 设计语言：统一主色、圆角、阴影与间距，
+ * 覆盖 Element Plus 的 CSS 变量以形成整体一致的质感。
+ * 支持浅色 / 暗色两套主题，通过 html.dark 切换。
+ */
+:root {
+  --el-color-primary: #6366f1;
+  --el-color-primary-light-3: #818cf8;
+  --el-color-primary-light-5: #a5b4fc;
+  --el-color-primary-light-7: #c7d2fe;
+  --el-color-primary-light-8: #e0e7ff;
+  --el-color-primary-light-9: #eef2ff;
+  --el-color-primary-dark-2: #4f46e5;
+
+  --el-border-radius-base: 8px;
+  --el-border-radius-small: 6px;
+  --el-border-radius-round: 999px;
+  --el-card-border-radius: 12px;
+  --el-text-color-primary: #1f2329;
+  --el-text-color-regular: #4b5563;
+
+  --ra-bg: #f5f7fa;
+  --ra-card: #ffffff;
+  --ra-card-border: #eef0f4;
+  --ra-hover: #f3f4f6;
+  --ra-primary: #6366f1;
+  --ra-primary-deep: #4f46e5;
+  --ra-text: #1f2329;
+  --ra-text-regular: #4b5563;
+  --ra-text-sub: #9ca3af;
+  --ra-active-bg: linear-gradient(90deg, #eef2ff, #e0e7ff);
+  --ra-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 24px -16px rgba(16, 24, 40, 0.12);
+}
+
+html.dark {
+  --el-color-primary: #818cf8;
+  --el-color-primary-light-3: #6366f1;
+  --el-color-primary-light-5: #4f46e5;
+  --el-color-primary-light-7: #3730a3;
+  --el-color-primary-light-8: #312e81;
+  --el-color-primary-light-9: #1e1b4b;
+  --el-color-primary-dark-2: #a5b4fc;
+
+  --el-text-color-primary: #e5e7eb;
+  --el-text-color-regular: #cbd5e1;
+  --el-bg-color: #1e293b;
+  --el-bg-color-overlay: #1e293b;
+
+  --ra-bg: #0f172a;
+  --ra-card: #1e293b;
+  --ra-card-border: #293548;
+  --ra-hover: #283548;
+  --ra-text: #e5e7eb;
+  --ra-text-regular: #cbd5e1;
+  --ra-text-sub: #94a3b8;
+  --ra-active-bg: linear-gradient(90deg, #312e81, #3730a3);
+  --ra-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -16px rgba(0, 0, 0, 0.5);
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  background: var(--ra-bg);
+  color: var(--el-text-color-primary);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.25s ease;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* ===== Element Plus 质感提升 ===== */
+.el-card {
+  border: 1px solid var(--ra-card-border);
+  box-shadow: var(--ra-shadow);
+}
+
+.el-card__header {
+  font-weight: 600;
+}
+
+.el-table {
+  --el-table-border-color: var(--ra-card-border);
+}
+.el-table th.el-table__cell {
+  background: var(--ra-hover);
+  color: var(--ra-text-sub);
+  font-weight: 600;
+}
+
+.el-button {
+  font-weight: 500;
+}
+
+.el-dialog {
+  border-radius: 12px;
+}
+
+.el-tag {
+  border-radius: 6px;
+}
+
+.el-input__wrapper,
+.el-textarea__inner {
+  border-radius: 8px;
+}
+
+.el-pagination {
+  --el-pagination-button-bg-color: transparent;
+}
+
+/* 通用分页条 */
+.pager {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* 滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.6);
+}

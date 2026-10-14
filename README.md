@@ -34,6 +34,7 @@ go run ./cmd/server
 
 | 端点 | 说明 |
 |---|---|
+| `http://127.0.0.1:8600/admin` | 管理后台前端（Vue3 + Element Plus，内嵌、与后端同源） |
 | `http://127.0.0.1:8600/api/v1/demo/ping` | 连通性测试 |
 | `http://127.0.0.1:8600/metrics` | Prometheus 指标 |
 | `http://127.0.0.1:8600/api.json` | OpenAPI 规范（机器可读） |
@@ -70,6 +71,22 @@ roamadmin/
 
 > 接口规范：所有接口输出与 API 文档（`summary`/`dc`/校验提示/错误信息）统一英文；
 > 时间字段统一 RFC3339(UTC)。新增模块写好 `g.Meta` 后，API 文档自动生成，无需额外维护。
+
+## 管理后台前端
+
+前端位于 [web/](web/)，技术栈 Vue3 + TypeScript + Vite + Element Plus + Pinia。构建产物输出到
+`kernel/webui/dist`，由内核 `go:embed` 内嵌，运行时挂在 `/admin`，单二进制、零 CORS。
+
+```bash
+cd web
+npm install
+npm run build      # 自动从后端 /api.json 重新生成接口类型，再打包
+```
+
+- **接口自动对接**：`npm run build`（或 `npm run gen:api`）会先从后端拉取 `/api.json`（OpenAPI），
+  由 `scripts/gen-api.mjs` 生成 `src/api/types.ts` 类型；新增/修改后端接口后重新构建即可，前端类型自动同步，
+  无需手写对接代码。
+- **默认账号**：`admin` / `admin123`（内置超级管理员）。
 
 ## 路线图
 

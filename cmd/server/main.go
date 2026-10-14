@@ -11,6 +11,7 @@ import (
 	"github.com/roamdream/roamadmin/kernel/errcode"
 	"github.com/roamdream/roamadmin/kernel/ra"
 	"github.com/roamdream/roamadmin/kernel/swaggerui"
+	"github.com/roamdream/roamadmin/kernel/webui"
 )
 
 const version = "0.1.0"
@@ -44,6 +45,9 @@ func main() {
 
 	// API 文档界面（Scalar，在线调试）：内嵌 @scalar/api-reference，零 CDN 依赖、离线可用。
 	swaggerui.Init(s, g.Cfg().MustGet(ctx, "server.openapiPath", "/api.json").String())
+
+	// 管理后台前端（Vue3 + Element Plus）：构建产物内嵌，挂在 /admin，与后端同源。
+	webui.Init(s)
 
 	// 全局中间件（注册顺序即执行顺序，由外到内）：
 	//   可观测（panic 隔离 + metrics + traceId）→ 认证（JWT 注入用户）→ 统一响应体。
