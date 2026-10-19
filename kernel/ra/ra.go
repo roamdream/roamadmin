@@ -12,6 +12,7 @@ import (
 	"context"
 	"sync"
 
+	"github.com/roamdream/roamadmin/kernel/audit"
 	"github.com/roamdream/roamadmin/kernel/auth"
 	"github.com/roamdream/roamadmin/kernel/cache"
 	"github.com/roamdream/roamadmin/kernel/config"
@@ -98,6 +99,9 @@ func Auth() *auth.Manager {
 	authOnce.Do(func() { authMgr = auth.Default() })
 	return authMgr
 }
+
+// Audit 操作审计管理器（懒初始化，读配置 audit.*）。
+func Audit() *audit.Manager { return audit.Default() }
 
 var (
 	tsdbOnce  sync.Once

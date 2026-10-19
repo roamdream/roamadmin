@@ -114,19 +114,30 @@ type Tenant struct {
 func (Tenant) TableName() string { return "ra_tenant" }
 
 // OperLog 操作日志实体（对应表 ra_oper_log，租户隔离）。
+// req_body/detail 为可能很大的字段，JSON 输出默认隐藏，由详情接口单独返回。
 type OperLog struct {
-	Id        int64       `json:"id"        orm:"id,primary"`
-	TenantId  int64       `json:"tenantId"  orm:"tenant_id"`
-	UserId    int64       `json:"userId"    orm:"user_id"`
-	Username  string      `json:"username"  orm:"username"`
-	Module    string      `json:"module"    orm:"module"`
-	Action    string      `json:"action"    orm:"action"`
-	Method    string      `json:"method"    orm:"method"`
-	Path      string      `json:"path"      orm:"path"`
-	IP        string      `json:"ip"        orm:"ip"`
-	Status    int         `json:"status"    orm:"status"`
-	ErrMsg    string      `json:"errMsg"    orm:"err_msg"`
-	CreatedAt *gtime.Time `json:"createdAt" orm:"created_at"`
+	Id         int64       `json:"id"         orm:"id,primary"`
+	TenantId   int64       `json:"tenantId"   orm:"tenant_id"`
+	UserId     int64       `json:"userId"     orm:"user_id"`
+	Username   string      `json:"username"   orm:"username"`
+	Module     string      `json:"module"     orm:"module"`
+	Action     string      `json:"action"     orm:"action"`
+	Method     string      `json:"method"     orm:"method"`
+	Path       string      `json:"path"       orm:"path"`
+	Query      string      `json:"query"      orm:"query"`
+	IP         string      `json:"ip"         orm:"ip"`
+	UserAgent  string      `json:"userAgent"  orm:"user_agent"`
+	Referer    string      `json:"referer"    orm:"referer"`
+	Status     int         `json:"status"     orm:"status"`
+	RespCode   int         `json:"respCode"   orm:"resp_code"`
+	ErrMsg     string      `json:"errMsg"     orm:"err_msg"`
+	DurationMs int64       `json:"durationMs" orm:"duration_ms"`
+	TargetType string      `json:"targetType" orm:"target_type"`
+	TargetId   int64       `json:"targetId"   orm:"target_id"`
+	TraceId    string      `json:"traceId"    orm:"trace_id"`
+	ReqBody    string      `json:"-"          orm:"req_body"`
+	Detail     string      `json:"-"          orm:"detail"`
+	CreatedAt  *gtime.Time `json:"createdAt"  orm:"created_at"`
 }
 
 // TableName 返回表名。

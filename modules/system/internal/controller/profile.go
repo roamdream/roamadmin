@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 
+	"github.com/roamdream/roamadmin/kernel/audit"
 	"github.com/roamdream/roamadmin/modules/system/api"
 	"github.com/roamdream/roamadmin/modules/system/internal/service"
 )
@@ -36,6 +37,6 @@ func (c *Profile) Logout(ctx context.Context, req *api.LogoutReq) (*api.LogoutRe
 	if err := service.Logout(ctx); err != nil {
 		return nil, err
 	}
-	recordOper(ctx, "auth", "logout", 0, "")
+	audit.Record(ctx, &audit.Entry{Module: "auth", Action: "logout"})
 	return &api.LogoutRes{Logout: true}, nil
 }

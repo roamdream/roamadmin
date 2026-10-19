@@ -12,6 +12,7 @@ import (
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/glog"
 
+	"github.com/roamdream/roamadmin/kernel/audit"
 	"github.com/roamdream/roamadmin/kernel/logger"
 	"github.com/roamdream/roamadmin/kernel/module"
 )
@@ -38,7 +39,8 @@ func (a *Application) Server() *ghttp.Server { return g.Server() }
 
 // Run 完整生命周期：
 //
-//	Init 全部模块 → Start 全部模块 → 启动 HTTP Server（阻塞，内部处理信号与优雅关闭）→ Stop 模块。
+//	Init 全部模块 → Start 全部模块 → 启动操作审计 → 启动 HTTP Server（阻塞，内部处理信号与优雅关闭）
+//	→ 关闭审计（flush 剩余日志）→ Stop 模块。
 func (a *Application) Run(ctx context.Context) error {
 	// 统一日志前缀 [ra]。
 	g.Log().SetPrefix(logger.BrandPrefix)
@@ -51,11 +53,17 @@ func (a *Application) Run(ctx context.Context) error {
 		return err
 	}
 
+	// 启动操作审计（异步批量落库 + 过期清理）。
+	audit.Default().Start(ctx)
+
 	g.Log().Infof(ctx, "%s v%s started, %d module(s) registered",
 		a.name, a.version, len(module.List()))
 
 	// 阻塞运行 HTTP Server；收到退出信号后完成 HTTP 优雅关闭再返回。
 	a.Server().Run()
+
+	// 关闭审计：停止后台协程并 flush 剩余日志。
+	audit.Default().Close(ctx)
 
 	g.Log().Info(ctx, "http server stopped, shutting down modules")
 	return a.stop(ctx)

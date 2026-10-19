@@ -72,6 +72,23 @@ pool:
 snowflake:
   nodeId: 1
 
+# 操作审计：全局自动采集 /api/v1/* 操作轨迹，异步批量落库 ra_oper_log（安全审计/追踪）
+audit:
+  enabled: true           # 总开关
+  logGet: false           # 是否也记录 GET 读请求（默认只记写操作 + 失败请求）
+  bodyCapture: true       # 是否采集 JSON 请求体（写操作 / JSON 请求）
+  bodyMaxLen: 2048        # 请求体脱敏后最大长度（字符）
+  sensitiveKeys:          # 请求体敏感字段（脱敏为 ***，大小写不敏感）
+    - password
+    - oldPassword
+    - newPassword
+    - token
+    - secret
+  queueSize: 4096         # 内存缓冲队列容量（满则丢弃并告警）
+  batchSize: 100          # 批量写库的每批条数
+  flushInterval: "500ms"  # 批量刷新间隔
+  retentionDays: 90       # 日志保留天数（0 表示永久保留）
+
 # 消息总线：local（进程内内存）| redis-streams（Redis Streams 落库，跨实例消费）
 mq:
   type: local

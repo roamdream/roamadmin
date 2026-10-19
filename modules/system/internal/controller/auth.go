@@ -18,7 +18,12 @@ func NewAuth() *Auth { return &Auth{} }
 func (c *Auth) Login(ctx context.Context, req *api.LoginReq) (*api.LoginRes, error) {
 	token, info, err := service.Login(ctx, req.Username, req.Password)
 	if err != nil {
-		recordLogin(ctx, 1, err.Error(), 0, 0, req.Username)
+		// 登录失败：按用户名归属租户/用户（用户名不存在则记 0），便于安全审计追踪。
+		userID, tenantID := int64(0), int64(0)
+		if u, ok := service.UserByUsername(ctx, req.Username); ok {
+			userID, tenantID = u.Id, u.TenantId
+		}
+		recordLogin(ctx, 1, err.Error(), userID, tenantID, req.Username)
 		return nil, err
 	}
 	recordLogin(ctx, 0, "", info.User.Id, info.User.TenantId, info.User.Username)

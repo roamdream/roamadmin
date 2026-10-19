@@ -8,6 +8,7 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
 
+	"github.com/roamdream/roamadmin/kernel/audit"
 	"github.com/roamdream/roamadmin/kernel/auth"
 	"github.com/roamdream/roamadmin/kernel/errcode"
 	"github.com/roamdream/roamadmin/kernel/ra"
@@ -75,6 +76,9 @@ func UpdateUser(ctx context.Context, user *model.User, roleIds []int64) error {
 		return errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
 
+	// 变更审计：取更新前快照（用户不存在则 before 为 nil，成功更新后据此生成 diff）。
+	before, beforeRoleIds, _ := GetUser(ctx, user.Id)
+
 	unlock, err := ra.Lock().Lock(ctx, consts.CachePrefixUser+user.Username, 5*time.Second)
 	if err != nil {
 		return errcode.Wrap(errcode.CodeInternal, err)
@@ -114,6 +118,22 @@ func UpdateUser(ctx context.Context, user *model.User, roleIds []int64) error {
 	})
 	if err != nil {
 		return errcode.Wrap(errcode.CodeDB, err)
+	}
+
+	// 更新成功：记录变更 diff（detail 字段，审计数据变更轨迹）。
+	if before != nil {
+		audit.AnnotateDetail(ctx, audit.Diff(
+			map[string]any{
+				"username": before.Username, "nickname": before.Nickname, "email": before.Email,
+				"phone": before.Phone, "avatar": before.Avatar, "status": before.Status,
+				"remark": before.Remark, "roleIds": beforeRoleIds,
+			},
+			map[string]any{
+				"username": user.Username, "nickname": user.Nickname, "email": user.Email,
+				"phone": user.Phone, "avatar": user.Avatar, "status": user.Status,
+				"remark": user.Remark, "roleIds": roleIds,
+			},
+		))
 	}
 	return nil
 }
@@ -180,6 +200,15 @@ func GetUser(ctx context.Context, id int64) (*model.User, []int64, error) {
 		roleIds = append(roleIds, r.RoleId)
 	}
 	return &user, roleIds, nil
+}
+
+// UserByUsername 按用户名查询用户（登录失败归属租户用；用户名不存在返回 false）。
+func UserByUsername(ctx context.Context, username string) (*model.User, bool) {
+	var user model.User
+	if err := ra.DB().Model(consts.TableUser).Where("username", username).Scan(&user); err != nil || user.Id == 0 {
+		return nil, false
+	}
+	return &user, true
 }
 
 // DeleteUser 删除用户（同时清理其角色关联）。

@@ -50,8 +50,9 @@ func main() {
 	webui.Init(s)
 
 	// 全局中间件（注册顺序即执行顺序，由外到内）：
-	//   可观测（panic 隔离 + metrics + traceId）→ 认证（JWT 注入用户）→ 统一响应体。
-	s.Use(ra.Observ().Middleware, ra.Auth().Middleware, errcode.Middleware)
+	//   可观测（panic 隔离 + metrics + traceId）→ 认证（JWT 注入用户）
+	//   → 操作审计（采集操作轨迹）→ 统一响应体。
+	s.Use(ra.Observ().Middleware, ra.Auth().Middleware, ra.Audit().Middleware, errcode.Middleware)
 
 	// Prometheus 指标抓取端点。
 	s.BindHandler("GET:/metrics", func(r *ghttp.Request) {

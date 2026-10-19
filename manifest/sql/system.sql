@@ -111,22 +111,35 @@ CREATE TABLE IF NOT EXISTS ra_dict_data (
     PRIMARY KEY (id)
 );
 
--- 操作日志表（租户隔离）
+-- 操作日志表（租户隔离，全局操作轨迹：谁在何时对系统做了什么、结果/耗时/请求内容）
 CREATE TABLE IF NOT EXISTS ra_oper_log (
-    id         BIGINT       NOT NULL COMMENT '雪花主键',
-    tenant_id  BIGINT       NOT NULL COMMENT '租户 ID',
-    user_id    BIGINT       NOT NULL DEFAULT 0 COMMENT '用户 ID',
-    username   VARCHAR(64)  DEFAULT '' COMMENT '用户名',
-    module     VARCHAR(64)  DEFAULT '' COMMENT '模块',
-    action     VARCHAR(64)  DEFAULT '' COMMENT '操作',
-    method     VARCHAR(16)  DEFAULT '' COMMENT '请求方法',
-    path       VARCHAR(255) DEFAULT '' COMMENT '请求路径',
-    ip         VARCHAR(64)  DEFAULT '' COMMENT '客户端 IP',
-    status     SMALLINT     NOT NULL DEFAULT 0 COMMENT '状态（0成功 1失败）',
-    err_msg    VARCHAR(512) DEFAULT '' COMMENT '错误信息',
-    created_at DATETIME     NOT NULL COMMENT '创建时间',
+    id          BIGINT        NOT NULL COMMENT '雪花主键',
+    tenant_id   BIGINT        NOT NULL COMMENT '租户 ID',
+    user_id     BIGINT        NOT NULL DEFAULT 0 COMMENT '用户 ID',
+    username    VARCHAR(64)   DEFAULT '' COMMENT '用户名',
+    module      VARCHAR(64)   DEFAULT '' COMMENT '模块',
+    action      VARCHAR(64)   DEFAULT '' COMMENT '操作',
+    method      VARCHAR(16)   DEFAULT '' COMMENT '请求方法',
+    path        VARCHAR(255)  DEFAULT '' COMMENT '请求路径',
+    query       VARCHAR(1024) DEFAULT '' COMMENT '查询字符串',
+    ip          VARCHAR(64)   DEFAULT '' COMMENT '客户端 IP',
+    user_agent  VARCHAR(512)  DEFAULT '' COMMENT 'User-Agent',
+    referer     VARCHAR(512)  DEFAULT '' COMMENT 'Referer',
+    status      SMALLINT      NOT NULL DEFAULT 0 COMMENT '状态（0成功 1失败）',
+    resp_code   INT           NOT NULL DEFAULT 0 COMMENT 'HTTP 状态码',
+    err_msg     VARCHAR(512)  DEFAULT '' COMMENT '错误信息',
+    duration_ms BIGINT        NOT NULL DEFAULT 0 COMMENT '耗时（毫秒）',
+    target_type VARCHAR(64)   DEFAULT '' COMMENT '目标资源类型',
+    target_id   BIGINT        NOT NULL DEFAULT 0 COMMENT '目标资源 ID',
+    trace_id    VARCHAR(64)   DEFAULT '' COMMENT '链路追踪 ID',
+    req_body    TEXT          COMMENT '请求体（敏感字段已脱敏）',
+    detail      TEXT          COMMENT '变更详情（JSON diff）',
+    created_at  DATETIME      NOT NULL COMMENT '创建时间',
     PRIMARY KEY (id)
 );
+
+CREATE INDEX idx_ra_oper_log_tenant ON ra_oper_log (tenant_id, id);
+CREATE INDEX idx_ra_oper_log_created ON ra_oper_log (created_at);
 
 -- 初始化数据：默认租户 / 超级管理员（用户名 admin，密码 admin123，bcrypt）
 INSERT INTO ra_tenant (id, name, code, status, remark, created_at, updated_at)

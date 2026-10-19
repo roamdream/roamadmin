@@ -9,6 +9,7 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
 
+	"github.com/roamdream/roamadmin/kernel/audit"
 	"github.com/roamdream/roamadmin/kernel/auth"
 	"github.com/roamdream/roamadmin/kernel/errcode"
 	"github.com/roamdream/roamadmin/kernel/ra"
@@ -117,6 +118,10 @@ func UpdateRole(ctx context.Context, role *model.Role) error {
 	if !ok {
 		return errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
+
+	// 变更审计：取更新前快照（角色不存在则 before 为 nil，成功更新后据此生成 diff）。
+	before, _, _ := GetRole(ctx, role.Id)
+
 	if _, err := ra.DB().Model(consts.TableRole).
 		Where("id", role.Id).
 		Where("tenant_id", tenantID).
@@ -127,6 +132,14 @@ func UpdateRole(ctx context.Context, role *model.Role) error {
 			"updated_at": gtime.Now(),
 		}).Update(); err != nil {
 		return errcode.Wrap(errcode.CodeDB, err)
+	}
+
+	// 更新成功：记录变更 diff。
+	if before != nil {
+		audit.AnnotateDetail(ctx, audit.Diff(
+			map[string]any{"name": before.Name, "status": before.Status, "remark": before.Remark},
+			map[string]any{"name": role.Name, "status": role.Status, "remark": role.Remark},
+		))
 	}
 	return nil
 }
@@ -170,6 +183,10 @@ func AssignRoleMenus(ctx context.Context, roleID int64, menuIds []int64) error {
 	if !ok {
 		return errcode.New(errcode.CodeTenantMissing, "missing tenant context")
 	}
+
+	// 变更审计：取分配前的菜单（角色不存在则 before 为 nil）。
+	before, beforeMenuIds, _ := GetRole(ctx, roleID)
+
 	n, err := ra.DB().Model(consts.TableRole).Where("id", roleID).Where("tenant_id", tenantID).Count()
 	if err != nil {
 		return errcode.Wrap(errcode.CodeDB, err)
@@ -199,6 +216,14 @@ func AssignRoleMenus(ctx context.Context, roleID int64, menuIds []int64) error {
 	})
 	if err != nil {
 		return errcode.Wrap(errcode.CodeDB, err)
+	}
+
+	// 分配成功：记录菜单变更 diff。
+	if before != nil {
+		audit.AnnotateDetail(ctx, audit.Diff(
+			map[string]any{"menuIds": beforeMenuIds},
+			map[string]any{"menuIds": menuIds},
+		))
 	}
 	return nil
 }
